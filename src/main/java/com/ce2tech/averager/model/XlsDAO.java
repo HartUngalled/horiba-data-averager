@@ -3,12 +3,14 @@ package com.ce2tech.averager.model;
 import lombok.*;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.poifs.filesystem.NPOIFSFileSystem;
+import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import java.io.File;
 import java.io.IOException;
 import java.time.ZoneId;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 @Data
@@ -20,40 +22,40 @@ public class XlsDAO {
     private List< List<Object> > data = new ArrayList<>();
 
     //METHODS
-    public void loadHeaderFromFile() {
+    public List<String> loadHeaderFromFile() {
 
         try ( NPOIFSFileSystem fs = new NPOIFSFileSystem( new File(filePath) ) ) {
             HSSFWorkbook wb = new HSSFWorkbook(fs.getRoot(), true);
             Sheet sheet = wb.getSheetAt(0);
             Row row = sheet.getRow(0);
 
-            int i=0;
-            while(true) {
-                try {
-                    dataHeader.add( row.getCell(i++).getStringCellValue() );
-                } catch (NullPointerException npe) {
-                    break;
-                }
+            Iterator<Cell> cellIterator = row.cellIterator();
+            while(cellIterator.hasNext()) {
+                dataHeader.add( cellIterator.next().getStringCellValue() );
             }
+            return dataHeader;
 
         } catch (IOException e) {
-            e.printStackTrace();
+            return null;
         }
     }
 
-    public void loadDataFromFile() {
+    public List< List<Object> > loadDataFromFile() {
 
         try ( NPOIFSFileSystem fs = new NPOIFSFileSystem( new File(filePath) ) ) {
             HSSFWorkbook wb = new HSSFWorkbook(fs.getRoot(), true);
             Sheet sheet = wb.getSheetAt(0);
 
-            for (int j=1; j<sheet.getPhysicalNumberOfRows(); j++) {
+            Iterator<Row> rowIterator = sheet.rowIterator();
+            rowIterator.next();
+
+            while (rowIterator.hasNext()) {
+                Row row = rowIterator.next();
+
                 List<Object> dataRow = new ArrayList<>();
                 data.add(dataRow);
-                Row row = sheet.getRow(j);
 
                 int i=0;
-
                 try {
                     dataRow.add(row.getCell(i++).getDateCellValue().toInstant().atZone(ZoneId.systemDefault()).toLocalDate());
                     dataRow.add(row.getCell(i++).getDateCellValue().toInstant().atZone(ZoneId.systemDefault()).toLocalTime());
@@ -77,9 +79,11 @@ public class XlsDAO {
 
             }
 
+            return data;
         } catch (IOException e) {
-            e.printStackTrace();
+            return null;
         }
 
     }
+
 }

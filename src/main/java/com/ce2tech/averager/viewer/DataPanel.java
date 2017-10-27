@@ -6,7 +6,7 @@ import javax.swing.*;
 
 public class DataPanel extends JPanel {
 
-    private XlsPresenter presenter = new XlsPresenter("testfile_oneminute.xls");
+    private XlsPresenter presenter = new XlsPresenter("testfile_tensecounds_no.xls");
     private JTable dataTable;
 
     public DataPanel() {
