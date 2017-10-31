@@ -15,7 +15,9 @@ public class DataPanel extends JPanel {
 
     private void init() {
 
-        dataTable = new JTable(presenter.averageToOneMin(), presenter.getHeaderArray());
+        // uncomment line below to get averaged data
+//        presenter.averageToOneMin();
+        dataTable = new JTable(presenter.getDataArray(), presenter.getHeaderArray());
         JScrollPane dataTableScroll = new JScrollPane(dataTable);
         add(dataTableScroll);
 

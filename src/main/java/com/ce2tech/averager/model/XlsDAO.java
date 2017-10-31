@@ -13,16 +13,23 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-@Data
+@RequiredArgsConstructor
 public class XlsDAO {
 
     //FIELDS
     @NonNull private String filePath;
-    private List<String> dataHeader = new ArrayList<>();
-    private List< List<Object> > data = new ArrayList<>();
+    private TransferObject dto;
+
+    public TransferObject getData() {
+        dto = new TransferObject();
+        dto.setDataHeader( loadHeaderFromFile() );
+        dto.setDataColumns( loadDataFromFile() );
+        return dto;
+    }
 
     //METHODS
-    public List<String> loadHeaderFromFile() {
+    private List<String> loadHeaderFromFile() {
+        List<String> dataHeader = new ArrayList<>();
 
         try ( NPOIFSFileSystem fs = new NPOIFSFileSystem( new File(filePath) ) ) {
             HSSFWorkbook wb = new HSSFWorkbook(fs.getRoot(), true);
@@ -40,47 +47,44 @@ public class XlsDAO {
         }
     }
 
-    public List< List<Object> > loadDataFromFile() {
+    private List< List<Object> > loadDataFromFile() {
+        List< List<Object> > dataColumns = new ArrayList<>();
 
         try ( NPOIFSFileSystem fs = new NPOIFSFileSystem( new File(filePath) ) ) {
             HSSFWorkbook wb = new HSSFWorkbook(fs.getRoot(), true);
             Sheet sheet = wb.getSheetAt(0);
 
-            Iterator<Row> rowIterator = sheet.rowIterator();
-            rowIterator.next();
+            Iterator<Cell> cellIterator = sheet.getRow(0).cellIterator();
 
-            while (rowIterator.hasNext()) {
-                Row row = rowIterator.next();
+            while ( cellIterator.hasNext() ) {
+                List<Object> singleColumn = new ArrayList<>();
+                dataColumns.add(singleColumn);
+                int columnIndex = cellIterator.next().getColumnIndex();
 
-                List<Object> dataRow = new ArrayList<>();
-                data.add(dataRow);
+                Iterator<Row> rowIterator = sheet.rowIterator();
+                rowIterator.next(); // Skip header
 
-                int i=0;
-                try {
-                    dataRow.add(row.getCell(i++).getDateCellValue().toInstant().atZone(ZoneId.systemDefault()).toLocalDate());
-                    dataRow.add(row.getCell(i++).getDateCellValue().toInstant().atZone(ZoneId.systemDefault()).toLocalTime());
-                } catch (NullPointerException npe) {
-                    break;
-                }
-
-                while(true) {   //While catch NullPointerException
-                    try {
-                        try {
-                            dataRow.add( row.getCell(i).getNumericCellValue() );
-                        } catch (IllegalStateException ise) {
-                            dataRow.add( row.getCell(i).getStringCellValue());
-                        } finally {
-                            i++;
-                        }
-                    } catch (NullPointerException npe) {
-                        break;
+                while (rowIterator.hasNext()) {
+                    Row row = rowIterator.next();
+                    switch (columnIndex) {
+                        case 0:
+                            singleColumn.add(row.getCell(columnIndex).getDateCellValue().toInstant().atZone(ZoneId.systemDefault()).toLocalDate());
+                            break;
+                        case 1:
+                            singleColumn.add(row.getCell(columnIndex).getDateCellValue().toInstant().atZone(ZoneId.systemDefault()).toLocalTime());
+                            break;
+                        default:
+                            try {
+                                singleColumn.add(row.getCell(columnIndex).getNumericCellValue());
+                            } catch (IllegalStateException ise) {
+                                singleColumn.add(row.getCell(columnIndex).getStringCellValue());
+                            }
                     }
                 }
 
             }
-
-            return data;
-        } catch (IOException e) {
+            return dataColumns;
+        } catch (IOException | NullPointerException e) {
             return null;
         }
 

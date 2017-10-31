@@ -9,6 +9,7 @@ import org.junit.runner.RunWith;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.List;
 
 @RunWith(DataProviderRunner.class)
 public class XlsPresenterAssertJ {
@@ -37,15 +38,37 @@ public class XlsPresenterAssertJ {
 
     @Test
     @UseDataProvider("filePathProvider")
-    public void shouldReturnLocalTimeIndex(String testFilePath) {
+    public void shouldConvertHeaderListToArray(String testFilePath) {
         //Given
         presenter = new XlsPresenter(testFilePath);
+        List<String> dtoHeaderList = presenter.getDto().getDataHeader();
 
         //When
-        int localTimeIndex = (int) invokePrivateMethod("getFileLocalTimeIndex");
+        String[] headerArray = presenter.getHeaderArray();
 
         //Then
-        assertThat(localTimeIndex).isEqualTo(1);
+        assertThat(headerArray.length).isEqualTo(dtoHeaderList.size());
+    }
+
+    @Test
+    @UseDataProvider("filePathProvider")
+    public void shouldConvertDataListToArray(String testFilePath) {
+        //Given
+        presenter = new XlsPresenter(testFilePath);
+        List<List<Object>> dtoDataList = presenter.getDto().getDataColumns();
+
+        int dtoRowSize = dtoDataList.size();
+        int dtoColumnSize = dtoDataList.get(0).size();
+
+        //When
+        Object[][] dataArray = presenter.getDataArray();
+
+        //Then
+        assertThat(dataArray.length).isEqualTo(dtoColumnSize);
+        for (int i=0; i<dataArray.length; i++) {
+            assertThat(dataArray[i].length).isEqualTo(dtoRowSize);
+        }
+
     }
 
     @Test
@@ -64,17 +87,6 @@ public class XlsPresenterAssertJ {
             assertThat(samplingTime).isEqualTo(60);
         }
     }
-
-    @Test
-    public void shouldAverageData() {
-        //Given
-        presenter = new XlsPresenter("testfile_tensecounds_no.xls");
-
-        //When
-        presenter.averageToOneMin();
-
-    }
-
 
 
 }
