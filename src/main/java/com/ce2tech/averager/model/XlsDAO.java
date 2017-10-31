@@ -63,7 +63,7 @@ public class XlsDAO {
                     break;
                 }
 
-                while(true) {
+                while(true) {   //While catch NullPointerException
                     try {
                         try {
                             dataRow.add( row.getCell(i).getNumericCellValue() );

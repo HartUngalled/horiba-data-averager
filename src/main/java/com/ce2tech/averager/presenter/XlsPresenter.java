@@ -1,7 +1,6 @@
 package com.ce2tech.averager.presenter;
 
 import com.ce2tech.averager.model.XlsDAO;
-
 import java.time.LocalTime;
 
 import static java.time.temporal.ChronoUnit.SECONDS;
@@ -37,17 +36,53 @@ public class XlsPresenter {
     }
 
     public Object[][] averageToOneMin () {
-        Object[][] oneMinData;
         Object[][] dataArray = getDataArray();
+        int rowLength = dataArray[0].length;
+        int columnLength = dataArray.length;
 
-        int dataRowLength = dataArray[0].length;
-        int dataColumnLength = dataArray.length;
+        Object[][] oneMinData = new Object[columnLength/6][];
+        for (int i=0; i<columnLength/6; i++) {
+            oneMinData[i] = new Object[rowLength];
+        }
 
-        return dataArray;
+
+        //Process only file with 10sec sampling time
+        if (getDataSamplingTime()!=10) return dataArray;
+
+        for (int j=0; j<rowLength; j++) {
+
+            if (dataColumnIs("Double", j)) {
+
+                double temporarySum = 0;
+                for (int i=0; i<columnLength; i++) {
+                    temporarySum += (double)dataArray[i][j];
+                    if (i%6==5) {
+                        oneMinData[i/6][j] = temporarySum/6;
+                        temporarySum = 0;
+                    }
+                }
+
+            } else {
+
+                for (int i=0; i<columnLength/6; i++) {
+                    //Take every sixth string from dataArray (last row of average)
+                    oneMinData[i][j] = dataArray[(i*6)+5][j];
+                }
+
+            }
+        }
+
+        return oneMinData;
     }
 
-    public int getDataSamplingTime() {
+    //Util for averageToOneMin()
+    private boolean dataColumnIs(String dataType, int columnIndex) {
+        Object[][] dataArray = getDataArray();
+        return dataArray[0][columnIndex].getClass().getSimpleName().equalsIgnoreCase("Double");
+    }
 
+    //Util for averageToOneMin()
+    private int getDataSamplingTime() {
         Object[][] dataArray = getDataArray();
         int localTimeIndex = getFileLocalTimeIndex();
 
@@ -55,10 +90,10 @@ public class XlsPresenter {
         LocalTime secondSampleTime = (LocalTime) dataArray[1][localTimeIndex];
 
         return (int)firstSampleTime.until(secondSampleTime, SECONDS);
-
     }
 
-    public int getFileLocalTimeIndex() {
+    //Util for averageToOneMin()
+    private int getFileLocalTimeIndex() {
         Object[][] dataArray = getDataArray();
 
         int dataRowLength = dataArray[0].length;

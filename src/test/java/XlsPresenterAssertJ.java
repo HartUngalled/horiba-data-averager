@@ -7,18 +7,32 @@ import com.tngtech.java.junit.dataprovider.UseDataProvider;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+
 @RunWith(DataProviderRunner.class)
 public class XlsPresenterAssertJ {
 
     private XlsPresenter presenter;
 
+    private Object invokePrivateMethod(String methodName) {
+        try {
+            Method method = XlsPresenter.class.getDeclaredMethod(methodName);
+            method.setAccessible(true);
+            return method.invoke(presenter);
+        } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
     @DataProvider
     public static String[] filePathProvider() {
         return new String[]
                 {"testfile_tensecounds_no_temp.xls",
-                "testfile_tensecounds_no.xls",
-                "testfile_tensecounds.xls",
-                "testfile_oneminute.xls"};
+                        "testfile_tensecounds_no.xls",
+                        "testfile_tensecounds.xls",
+                        "testfile_oneminute.xls"};
     }
 
     @Test
@@ -28,7 +42,7 @@ public class XlsPresenterAssertJ {
         presenter = new XlsPresenter(testFilePath);
 
         //When
-        int localTimeIndex = presenter.getFileLocalTimeIndex();
+        int localTimeIndex = (int) invokePrivateMethod("getFileLocalTimeIndex");
 
         //Then
         assertThat(localTimeIndex).isEqualTo(1);
@@ -41,7 +55,7 @@ public class XlsPresenterAssertJ {
         presenter = new XlsPresenter(testFilePath);
 
         //When
-        int samplingTime = presenter.getDataSamplingTime();
+        int samplingTime = (int) invokePrivateMethod("getDataSamplingTime");
 
         //Then
         if ( testFilePath.contains("tensecounds") ) {
@@ -49,6 +63,16 @@ public class XlsPresenterAssertJ {
         } else {
             assertThat(samplingTime).isEqualTo(60);
         }
+    }
+
+    @Test
+    public void shouldAverageData() {
+        //Given
+        presenter = new XlsPresenter("testfile_tensecounds_no.xls");
+
+        //When
+        presenter.averageToOneMin();
+
     }
 
 
