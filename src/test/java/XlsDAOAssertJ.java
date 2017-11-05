@@ -83,15 +83,20 @@ public class XlsDAOAssertJ {
         dto = dao.getData();
 
         //Then
-        assertThat(dto).isNotNull();
-
         assertThat(dto.getDataHeader().size()).isEqualTo(testFileRowSize);
-
         assertThat(dto.getDataColumns().size()).isEqualTo(testFileRowSize);
-
         for (List<Object> column : dto.getDataColumns()) {
             assertThat(column.size()).isEqualTo(testFileColumnSize-1);  //-1 because of header
         }
+    }
+
+    @Test
+    public void shouldCreateNewFile() {
+        //Given
+        dao = new XlsDAO("testfile_tensecounds_no_temp.xls");
+
+        //When
+        dao.setData(dao.getData(), "newFile.xls");
     }
 
 }

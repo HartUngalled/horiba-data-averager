@@ -41,7 +41,7 @@ public class XlsPresenterAssertJ {
     public void shouldConvertHeaderListToArray(String testFilePath) {
         //Given
         presenter = new XlsPresenter(testFilePath);
-        List<String> dtoHeaderList = presenter.getDto().getDataHeader();
+        List<String> dtoHeaderList = presenter.getData().getDataHeader();
 
         //When
         String[] headerArray = presenter.getHeaderArray();
@@ -55,7 +55,7 @@ public class XlsPresenterAssertJ {
     public void shouldConvertDataListToArray(String testFilePath) {
         //Given
         presenter = new XlsPresenter(testFilePath);
-        List<List<Object>> dtoDataList = presenter.getDto().getDataColumns();
+        List<List<Object>> dtoDataList = presenter.getData().getDataColumns();
 
         int dtoRowSize = dtoDataList.size();
         int dtoColumnSize = dtoDataList.get(0).size();
@@ -86,7 +86,15 @@ public class XlsPresenterAssertJ {
         } else {
             assertThat(samplingTime).isEqualTo(60);
         }
+
     }
 
+    @Test
+    public void createAveragedFile() {
+        presenter = new XlsPresenter("testfile_tensecounds_no_temp.xls");
+        presenter.getData();
+        presenter.averageToOneMin();
+        presenter.setData("newFile.xls");
+    }
 
 }

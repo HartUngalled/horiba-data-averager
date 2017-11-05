@@ -2,7 +2,7 @@ package com.ce2tech.averager.presenter;
 
 import com.ce2tech.averager.model.TransferObject;
 import com.ce2tech.averager.model.XlsDAO;
-import lombok.Getter;
+import org.apache.poi.EmptyFileException;
 
 import java.time.LocalTime;
 import java.util.ArrayList;
@@ -13,11 +13,20 @@ import static java.time.temporal.ChronoUnit.SECONDS;
 public class XlsPresenter {
 
     private XlsDAO dao;
-    @Getter private TransferObject dto;
+    private TransferObject dto;
 
-    public XlsPresenter(String filePath) {
+    public XlsPresenter(String filePath) throws EmptyFileException {
         dao = new XlsDAO(filePath);
+        getData();
+    }
+
+    public TransferObject getData() {
         dto = dao.getData();
+        return dto;
+    }
+
+    public void setData(String filePath) {
+        dao.setData(dto, filePath);
     }
 
     public String[] getHeaderArray() {
@@ -67,7 +76,6 @@ public class XlsPresenter {
                 i++;
             }
         }
-
         dto.setDataColumns( averagedColumns );
     }
 
