@@ -1,26 +1,20 @@
 package com.ce2tech.averager.viewer;
 
-import com.ce2tech.averager.myutils.Observer;
 import lombok.Getter;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.ArrayList;
-import java.util.List;
 
 public class MainView extends JFrame {
 
-
-    private List<Observer> observers = new ArrayList<>();
     @Getter private DataPanel dataPanel;
 
     public MainView() {
         initFrame();
         initDataPanel();
         initMainMenuBar();
-        initTestButton();
 
         setVisible(true);
     }
@@ -31,11 +25,29 @@ public class MainView extends JFrame {
         setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         setSize(900, 500);
         setLayout(new BorderLayout(10,10));
+
+//        //Close listener copy-pasted from stackoverflow
+//        addWindowListener( new WindowAdapter()
+//        {
+//            public void windowClosing(WindowEvent e)
+//            {
+//                JFrame frame = (JFrame)e.getSource();
+//
+//                int result = JOptionPane.showConfirmDialog(
+//                        frame,
+//                        "Are you sure you want to exit the application?",
+//                        "Exit Application",
+//                        JOptionPane.YES_NO_OPTION);
+//
+//                if (result == JOptionPane.YES_OPTION)
+//                    frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+//            }
+//        });
     }
 
     private void initDataPanel() {
         dataPanel = new DataPanel();
-        add(dataPanel, BorderLayout.WEST);
+        add(dataPanel, BorderLayout.CENTER);
     }
 
     private void initMainMenuBar() {
@@ -45,8 +57,10 @@ public class MainView extends JFrame {
         JMenuItem openFile = new JMenuItem("Open");
         JMenuItem saveFile = new JMenuItem("Save");
         JMenuItem closeApp = new JMenuItem("Close");
-        JMenu options = new JMenu("Options");
-        JMenu aboutApp = new JMenu("Help");
+        JMenu calculations = new JMenu("Calculations");
+        JMenuItem averageData = new JMenuItem("Convert to 1-min average");
+        JMenu help = new JMenu("Help");
+        JMenuItem aboutApp = new JMenuItem("About Application");
 
         openFile.addActionListener(new ActionListener() {
             @Override
@@ -62,31 +76,33 @@ public class MainView extends JFrame {
             }
         });
 
-        mainMenuBar.add(menuFile);
-        menuFile.add(openFile);
-        menuFile.add(saveFile);
-        menuFile.addSeparator();
-        menuFile.add(closeApp);
-        mainMenuBar.add(options);
-        mainMenuBar.add(aboutApp);
-
-        setJMenuBar(mainMenuBar);
-    }
-
-    private void initTestButton() {
-        JButton button = new JButton();
-        button.setText( "This is a test button. " +
-                        "\nClick to average data" +
-                        "\nin table on left.");
-        button.addActionListener(new ActionListener() {
+        averageData.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 dataPanel.averageData();
             }
         });
-        JPanel buttonHolder = new JPanel();
-        buttonHolder.add(button);
-        add(buttonHolder, BorderLayout.EAST);
+
+        aboutApp.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                JOptionPane.showMessageDialog(dataPanel, "Program was created by Michal \"Lasuch\" Garus.\n" +
+                        "If you need any help you can buy a box of cakes and come to me directly.\n" +
+                        "You can also try to email me, not guarantee I'll response without cakes.\n" +
+                        "m.garus@ce2tech.pl", "About Application", JOptionPane.INFORMATION_MESSAGE);
+            }
+        });
+
+        mainMenuBar.add(menuFile);
+        menuFile.add(openFile);
+        menuFile.add(saveFile);
+        menuFile.addSeparator();
+        menuFile.add(closeApp);
+        mainMenuBar.add(calculations);
+        calculations.add(averageData);
+        mainMenuBar.add(help);
+        help.add(aboutApp);
+        setJMenuBar(mainMenuBar);
     }
 
 }

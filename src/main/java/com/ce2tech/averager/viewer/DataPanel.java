@@ -6,10 +6,11 @@ import com.ce2tech.averager.presenter.XlsPresenter;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableModel;
+import java.awt.*;
 
 public class DataPanel extends JPanel implements Observer {
 
-    private XlsPresenter presenter;
+    private XlsPresenter presenter = new XlsPresenter("");
     private JTable dataTable;
 
     public DataPanel() {
@@ -17,16 +18,25 @@ public class DataPanel extends JPanel implements Observer {
     }
 
     private void init() {
-        TableModel model = new DefaultTableModel();
-        dataTable = new JTable(model);
+        setLayout(new BorderLayout(10,10));
+
+        dataTable = new JTable(new DefaultTableModel());
         JScrollPane dataTableScroll = new JScrollPane(dataTable);
-        add(dataTableScroll);
+        add(dataTableScroll, BorderLayout.CENTER);
     }
 
     public void averageData() {
         presenter.averageToOneMin();
+        dataTable.setModel(createUpToDateModel());
+    }
+
+    private TableModel createUpToDateModel() {
         TableModel model = new DefaultTableModel(presenter.getDataArray(), presenter.getHeaderArray());
-        dataTable.setModel(model);
+
+        if (model.getColumnCount()==0) JOptionPane.showMessageDialog(this, "You need to open file with aproppiate " +
+                "\ndata format to perform calculations.", "Wrong file format", JOptionPane.WARNING_MESSAGE);
+
+        return model;
     }
 
     @Override
@@ -35,12 +45,11 @@ public class DataPanel extends JPanel implements Observer {
         String filePath = message.substring(4);
 
         if ( message.contains("Save") ) {
-            if (!filePath.contains(".xls")) filePath = filePath + ".xls";
+            filePath += ( filePath.endsWith(".xls") ) ? "" : ".xls";
             presenter.setData(filePath);
         } else if ( message.contains("Open") ){
             presenter = new XlsPresenter(filePath);
-            TableModel model = new DefaultTableModel(presenter.getDataArray(), presenter.getHeaderArray());
-            dataTable.setModel(model);
+            dataTable.setModel( createUpToDateModel() );
         }
     }
 }

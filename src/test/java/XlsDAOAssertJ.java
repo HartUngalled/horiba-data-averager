@@ -1,33 +1,21 @@
 import com.ce2tech.averager.model.TransferObject;
 import com.ce2tech.averager.model.XlsDAO;
+
+import static com.ce2tech.averager.myutils.TestingUtil.invokePrivateMethod;
 import static org.assertj.core.api.Assertions.*;
 
-import com.ce2tech.averager.presenter.XlsPresenter;
 import com.tngtech.java.junit.dataprovider.DataProvider;
 import com.tngtech.java.junit.dataprovider.DataProviderRunner;
 import com.tngtech.java.junit.dataprovider.UseDataProvider;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.util.List;
 
 @RunWith(DataProviderRunner.class)
 public class XlsDAOAssertJ {
 
     private XlsDAO dao;
-
-    private Object invokePrivateMethod(String methodName) {
-        try {
-            Method method = XlsDAO.class.getDeclaredMethod(methodName);
-            method.setAccessible(true);
-            return method.invoke(dao);
-        } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
-            e.printStackTrace();
-            return null;
-        }
-    }
 
     @DataProvider
     public static Object[][] fileSizeProvider() {
@@ -36,7 +24,9 @@ public class XlsDAOAssertJ {
                 {"testfile_tensecounds_no_temp.xls", 9, 739},
                 {"testfile_tensecounds_no.xls", 8, 447},
                 {"testfile_tensecounds.xls", 7, 364},
-                {"testfile_oneminute.xls", 7, 62}
+                {"testfile_oneminute.xls", 7, 62},
+                {"wrong-file-name.jpg", 0, 0},
+                {"", 0, 0}
         };
     }
 
@@ -48,11 +38,12 @@ public class XlsDAOAssertJ {
         dao = new XlsDAO(testFilePath);
 
         //When
-        dataHeader = (List<String>) invokePrivateMethod("loadHeaderFromFile");
+        dataHeader = (List<String>) invokePrivateMethod("loadHeaderFromFile", dao);
 
         //Then
         assertThat(dataHeader.size()).isEqualTo(testFileRowSize);
     }
+
 
     @Test
     @UseDataProvider("fileSizeProvider")
@@ -62,7 +53,7 @@ public class XlsDAOAssertJ {
         dao = new XlsDAO(testFilePath);
 
         //When
-        data = (List<List<Object>>) invokePrivateMethod("loadDataFromFile");
+        data = (List<List<Object>>) invokePrivateMethod("loadDataFromFile", dao);
 
         //Then
         assertThat(data.size()).isEqualTo(testFileRowSize);
@@ -91,12 +82,22 @@ public class XlsDAOAssertJ {
     }
 
     @Test
-    public void shouldCreateNewFile() {
+    @UseDataProvider("fileSizeProvider")
+    public void shouldCreateNewCopyOfFile(String testFilePath, int testFileRowSize, int testFileColumnSize) {
         //Given
-        dao = new XlsDAO("testfile_tensecounds_no_temp.xls");
+        TransferObject copiedData;
+        dao = new XlsDAO(testFilePath);
 
         //When
         dao.setData(dao.getData(), "newFile.xls");
+        copiedData = ( new XlsDAO("newFile.xls") ).getData();
+
+        //Then
+        assertThat(copiedData.getDataHeader().size()).isEqualTo(testFileRowSize);
+        assertThat(copiedData.getDataColumns().size()).isEqualTo(testFileRowSize);
+        for (List<Object> column : copiedData.getDataColumns()) {
+            assertThat(column.size()).isEqualTo(testFileColumnSize-1);  //-1 because of header
+        }
     }
 
 }

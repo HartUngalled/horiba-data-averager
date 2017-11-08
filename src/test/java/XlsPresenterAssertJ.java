@@ -1,3 +1,4 @@
+import static com.ce2tech.averager.myutils.TestingUtil.invokePrivateMethod;
 import static org.assertj.core.api.Assertions.*;
 
 import com.ce2tech.averager.presenter.XlsPresenter;
@@ -16,24 +17,15 @@ public class XlsPresenterAssertJ {
 
     private XlsPresenter presenter;
 
-    private Object invokePrivateMethod(String methodName) {
-        try {
-            Method method = XlsPresenter.class.getDeclaredMethod(methodName);
-            method.setAccessible(true);
-            return method.invoke(presenter);
-        } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
-            e.printStackTrace();
-            return null;
-        }
-    }
-
     @DataProvider
     public static String[] filePathProvider() {
         return new String[]
                 {"testfile_tensecounds_no_temp.xls",
                         "testfile_tensecounds_no.xls",
                         "testfile_tensecounds.xls",
-                        "testfile_oneminute.xls"};
+                        "testfile_oneminute.xls",
+                        "wrong-file-name.jpg",
+                        ""};
     }
 
     @Test
@@ -56,9 +48,8 @@ public class XlsPresenterAssertJ {
         //Given
         presenter = new XlsPresenter(testFilePath);
         List<List<Object>> dtoDataList = presenter.getData().getDataColumns();
-
+        int dtoColumnSize = dtoDataList.isEmpty() ? 0 : dtoDataList.get(0).size();
         int dtoRowSize = dtoDataList.size();
-        int dtoColumnSize = dtoDataList.get(0).size();
 
         //When
         Object[][] dataArray = presenter.getDataArray();
@@ -78,23 +69,37 @@ public class XlsPresenterAssertJ {
         presenter = new XlsPresenter(testFilePath);
 
         //When
-        int samplingTime = (int) invokePrivateMethod("getDataSamplingTime");
+        int samplingTime = (int) invokePrivateMethod("getDataSamplingTime", presenter);
 
         //Then
         if ( testFilePath.contains("tensecounds") ) {
             assertThat(samplingTime).isEqualTo(10);
-        } else {
+        } else if ( testFilePath.contains("oneminute") ) {
             assertThat(samplingTime).isEqualTo(60);
+        } else {
+            assertThat(samplingTime).isEqualTo(-1);
         }
 
     }
 
     @Test
-    public void createAveragedFile() {
-        presenter = new XlsPresenter("testfile_tensecounds_no_temp.xls");
+    @UseDataProvider("filePathProvider")
+    public void createAveragedFile(String testFilePath) {
+        //Given
+        presenter = new XlsPresenter(testFilePath);
+        Object[][] dataArray = presenter.getDataArray();
+
+        //When
         presenter.getData();
         presenter.averageToOneMin();
         presenter.setData("newFile.xls");
+        XlsPresenter presenterNewFile = new XlsPresenter("newFile.xls");
+        Object[][] averagedDataArray = presenterNewFile.getDataArray();
+
+        //Then
+        for (int i=0; i<averagedDataArray.length; i++) {
+            assertThat(averagedDataArray[i].length).isEqualTo(dataArray[i/6].length);
+        }
     }
 
 }

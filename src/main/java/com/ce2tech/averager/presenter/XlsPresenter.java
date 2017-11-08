@@ -2,7 +2,6 @@ package com.ce2tech.averager.presenter;
 
 import com.ce2tech.averager.model.TransferObject;
 import com.ce2tech.averager.model.XlsDAO;
-import org.apache.poi.EmptyFileException;
 
 import java.time.LocalTime;
 import java.util.ArrayList;
@@ -15,7 +14,7 @@ public class XlsPresenter {
     private XlsDAO dao;
     private TransferObject dto;
 
-    public XlsPresenter(String filePath) throws EmptyFileException {
+    public XlsPresenter(String filePath) {
         dao = new XlsDAO(filePath);
         getData();
     }
@@ -35,8 +34,9 @@ public class XlsPresenter {
     }
 
     public Object[][] getDataArray() {
+        //Line below is precaution against NoSuchElementException
+        int dataColumnLength = dto.getDataColumns().isEmpty() ? 0 : dto.getDataColumns().iterator().next().size();
         int dataRowLength = dto.getDataColumns().size();
-        int dataColumnLength = dto.getDataColumns().get(0).size();
 
         Object[][] dataArray = new Object[dataColumnLength][dataRowLength];
 

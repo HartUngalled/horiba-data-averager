@@ -1,13 +1,12 @@
 package com.ce2tech.averager.model;
 
 import lombok.*;
+import org.apache.poi.EmptyFileException;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.poifs.filesystem.NPOIFSFileSystem;
 import org.apache.poi.ss.usermodel.*;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
+import java.io.*;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.ZoneId;
@@ -124,14 +123,14 @@ public class XlsDAO {
             while(cellIterator.hasNext()) {
                 dataHeader.add( cellIterator.next().getStringCellValue() );
             }
-            return dataHeader;
 
-        } catch (IOException e) {
-            return null;
+        } catch (IOException | EmptyFileException e) {
+            System.out.println(e.getMessage());
         }
+        return dataHeader;
     }
 
-    private List< List<Object> > loadDataFromFile() {
+    private List< List<Object> > loadDataFromFile()  {
         List< List<Object> > dataColumns = new ArrayList<>();
 
         try ( NPOIFSFileSystem fs = new NPOIFSFileSystem( new File(filePath) ) ) {
@@ -167,11 +166,10 @@ public class XlsDAO {
                 }
 
             }
-            return dataColumns;
-        } catch (IOException | NullPointerException e) {
-            return null;
+        } catch (IOException | EmptyFileException | NullPointerException e) {
+            System.out.println(e.getMessage());
         }
-
+        return dataColumns;
     }
 
 }
