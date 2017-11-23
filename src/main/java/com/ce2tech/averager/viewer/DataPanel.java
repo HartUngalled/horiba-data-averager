@@ -26,12 +26,12 @@ public class DataPanel extends JPanel implements Observer {
     }
 
     public void averageData() {
-        presenter.averageToOneMin();
+        presenter.averageToPeriod(60);
         dataTable.setModel(createUpToDateModel());
     }
 
     private TableModel createUpToDateModel() {
-        TableModel model = new DefaultTableModel(presenter.getDataArray(), presenter.getHeaderArray());
+        TableModel model = new DefaultTableModel(presenter.getDataToDisplay(), presenter.getHeaderToDisplay());
 
         if (model.getColumnCount()==0) JOptionPane.showMessageDialog(this, "You need to open file with aproppiate " +
                 "\ndata format to perform calculations.", "Wrong file format", JOptionPane.WARNING_MESSAGE);

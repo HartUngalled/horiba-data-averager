@@ -1,98 +1,120 @@
 package com.ce2tech.averager.presenter;
 
-import com.ce2tech.averager.model.TransferObject;
-import com.ce2tech.averager.model.XlsDAO;
-
+import com.ce2tech.averager.model.dto.Measurand;
+import com.ce2tech.averager.model.dto.TransferObject;
+import com.ce2tech.averager.model.dao.XlsDAO;
+import com.ce2tech.averager.myutils.measurandgetters.MeasurandValueGetter;
 import java.time.LocalTime;
-import java.util.ArrayList;
-import java.util.List;
-
-import static java.time.temporal.ChronoUnit.SECONDS;
+import java.util.*;
 
 public class XlsPresenter {
 
     private XlsDAO dao;
     private TransferObject dto;
+    private MeasurandValueGetter measurandGetter = MeasurandValueGetter.getChainOfResponsibility();
 
     public XlsPresenter(String filePath) {
         dao = new XlsDAO(filePath);
-        getData();
+        dto = getData();
+    }
+
+    public void setData(String filePatch) {
+        dao.setData(dto, filePatch);
     }
 
     public TransferObject getData() {
-        dto = dao.getData();
-        return dto;
+        return dao.getData();
     }
 
-    public void setData(String filePath) {
-        dao.setData(dto, filePath);
+    public String[] getHeaderToDisplay() {
+        List<String> header = new ArrayList<>();
+
+        dto.getMeasurement().spliterator().tryAdvance(
+                (sample) -> {   for(Measurand measurand : sample)
+                                header.add(measurand.getComponent());   } );
+
+        return header.toArray(new String[ header.size() ]);
     }
 
-    public String[] getHeaderArray() {
-        List<String> headerList = dto.getDataHeader();
-        return headerList.toArray( new String[headerList.size()] );
-    }
+    public Object[][] getDataToDisplay() {
+        List< List<Measurand> > measurement = dto.getMeasurement();
+        int columnLength = measurement.size();
+        int rowLength = (columnLength>0) ? measurement.iterator().next().size() : 0;
 
-    public Object[][] getDataArray() {
-        //Line below is precaution against NoSuchElementException
-        int dataColumnLength = dto.getDataColumns().isEmpty() ? 0 : dto.getDataColumns().iterator().next().size();
-        int dataRowLength = dto.getDataColumns().size();
+        Object[][] measurementAsTable = new Object[columnLength][rowLength];
 
-        Object[][] dataArray = new Object[dataColumnLength][dataRowLength];
-
-        for (int i=0; i<dataColumnLength; i++) {
-            for (int j=0; j<dataRowLength; j++) {
-                dataArray[i][j] = dto.getDataColumns().get(j).get(i);
+        for (int i=0; i<columnLength; i++) {
+            for (int j=0; j<rowLength; j++) {
+                measurementAsTable[i][j] = measurandGetter.getValue( measurement.get(i).get(j) );
             }
         }
 
-        return dataArray;
+        return measurementAsTable;
     }
 
-    public void averageToOneMin() {
-        //Process only file with 10sec sampling time
-        if (getDataSamplingTime()!=10) return;
+    public void averageToPeriod(int secondsPeriod) {
+        List< List<Measurand> > measurement = new ArrayList<>(dto.getMeasurement());
+        List< List<Measurand> > averagedMeasurement = new ArrayList<>();
 
-        List<List<Object>> averagedColumns = new ArrayList<>();
+        while(!measurement.isEmpty()) {
+            List< List<Measurand> > samplesFromPeriod = getFirstSamplesFromPeriod(measurement, secondsPeriod);
+            averagedMeasurement.add(getAveragedSample(samplesFromPeriod));
+            measurement.removeAll(samplesFromPeriod);
+        }
 
-        for (List<Object> column : dto.getDataColumns()) {
-            List<Object> singleAveragedColumn = new ArrayList<>();
-            averagedColumns.add(singleAveragedColumn);
+        dto.setMeasurement(averagedMeasurement);
+    }
 
-            int i = 0;
-            Double tempSum = 0.0;
-            for (Object value : column) {
-                if (value instanceof Double) {
-                    tempSum += (Double) value;
-                    if (i%6==5) {
-                        singleAveragedColumn.add(tempSum/6);
-                        tempSum = 0.0;
-                    }
-                } else {
-                    if (i%6==5) {
-                        singleAveragedColumn.add(value);
-                    }
+    public List<Measurand> getAveragedSample(List< List<Measurand> > samplesToAverage) {
+        List<Measurand> averagedSample = new ArrayList<>();
+        Collections.reverse(samplesToAverage);
+
+        for (List<Measurand> sample : samplesToAverage) {
+            //Fill new list with copy of measurands from first sample
+            if (averagedSample.isEmpty()) {
+                for (Measurand measurand : sample) {
+                    averagedSample.add(new Measurand(measurand));
                 }
-                i++;
+            }
+            //Sum only measurands with Double value
+            for (Measurand measurand : sample) {
+                if (measurandGetter.getValue(measurand) instanceof Double) {
+                    int measurandIndex = sample.indexOf(measurand);
+                    double sumValue = measurand.getNumericValue() + averagedSample.get(measurandIndex).getNumericValue();
+                    averagedSample.set(measurandIndex, new Measurand(measurand.getComponent(), sumValue));
+                }
+            }
+
+        }
+        //Calculate averages from sums
+        for (int i=0; i<averagedSample.size(); i++) {
+            Measurand measurand = averagedSample.get(i);
+            if (measurandGetter.getValue(measurand) instanceof Double) {
+                double averagedValue = measurand.getNumericValue()/samplesToAverage.size();
+                Measurand replacement = new Measurand(measurand.getComponent(), averagedValue);
+                averagedSample.add(i, replacement);
+                averagedSample.remove(measurand);
             }
         }
-        dto.setDataColumns( averagedColumns );
+        return averagedSample;
     }
 
-    //Util for averageToOneMin()
-    private int getDataSamplingTime() {
+    public List< List<Measurand> > getFirstSamplesFromPeriod(List< List<Measurand> > measurement, int secPeriod){
+        List< List<Measurand> > measurementPart = new ArrayList<>();
+        LocalTime firstSampleTime;
+        LocalTime currentSampleTime;
 
-        for (List<Object> column : dto.getDataColumns()) {
-            if (column.get(0) instanceof LocalTime) {
-
-                LocalTime firstSampleTime = (LocalTime) column.get(0);
-                LocalTime secondSampleTime = (LocalTime) column.get(1);
-                return (int)firstSampleTime.until(secondSampleTime, SECONDS);
-
+        for (List<Measurand> sample : measurement) {
+            firstSampleTime = measurandGetter.getSampleTime( measurement.iterator().next() );
+            currentSampleTime = measurandGetter.getSampleTime(sample);
+            if ( currentSampleTime.isAfter(firstSampleTime.plusSeconds(secPeriod-1)) ) {
+                return measurementPart;
+            } else {
+                measurementPart.add(sample);
             }
         }
-        return -1;
 
+        return measurementPart;
     }
 
 }
