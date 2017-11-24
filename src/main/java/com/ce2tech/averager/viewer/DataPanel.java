@@ -7,6 +7,7 @@ import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableModel;
 import java.awt.*;
+import java.time.LocalTime;
 
 public class DataPanel extends JPanel implements Observer {
 
@@ -25,8 +26,8 @@ public class DataPanel extends JPanel implements Observer {
         add(dataTableScroll, BorderLayout.CENTER);
     }
 
-    public void averageData() {
-        presenter.averageToPeriod(60);
+    public void averageData(int secoundsPeriod, LocalTime start, LocalTime stop) {
+        presenter.averageFromStartToStop(secoundsPeriod, start, stop);
         dataTable.setModel(createUpToDateModel());
     }
 

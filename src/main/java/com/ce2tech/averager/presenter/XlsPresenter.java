@@ -52,18 +52,49 @@ public class XlsPresenter {
         return measurementAsTable;
     }
 
-    public void averageToPeriod(int secondsPeriod) {
+
+
+    public void averageFromStartToStop(int secondsPeriod, LocalTime startTime, LocalTime stopTime) {
         List< List<Measurand> > measurement = new ArrayList<>(dto.getMeasurement());
         List< List<Measurand> > averagedMeasurement = new ArrayList<>();
+        List< List<Measurand> > samplesFromPeriod;
+        List< Measurand > firstSample;
+
 
         while(!measurement.isEmpty()) {
-            List< List<Measurand> > samplesFromPeriod = getFirstSamplesFromPeriod(measurement, secondsPeriod);
-            averagedMeasurement.add(getAveragedSample(samplesFromPeriod));
-            measurement.removeAll(samplesFromPeriod);
+            firstSample = measurement.get(0);
+            if (startTime.equals(LocalTime.MIN)) startTime = measurandGetter.getSampleTime(firstSample);
+            if (    measurandGetter.getSampleTime(firstSample).isBefore(startTime) ||
+                    measurandGetter.getSampleTime(firstSample).isAfter(stopTime.minusSeconds(secondsPeriod)))
+                measurement.remove(firstSample);
+            else {
+                samplesFromPeriod = getFirstSamplesFromPeriod(measurement, secondsPeriod, startTime);
+                measurement.removeAll(samplesFromPeriod);
+                if (!samplesFromPeriod.isEmpty()) averagedMeasurement.add( getAveragedSample(samplesFromPeriod) );
+                startTime = startTime.plusSeconds( secondsPeriod );
+            }
         }
 
         dto.setMeasurement(averagedMeasurement);
     }
+
+
+    public List< List<Measurand> > getFirstSamplesFromPeriod(List< List<Measurand> > measurement, int secPeriod, LocalTime beginningTime){
+        List< List<Measurand> > measurementPart = new ArrayList<>();
+        LocalTime currentSampleTime;
+
+        for (List<Measurand> sample : measurement) {
+            currentSampleTime = measurandGetter.getSampleTime(sample);
+            if ( !currentSampleTime.isBefore(beginningTime.plusSeconds(secPeriod)) ) {
+                return measurementPart;
+            } else {
+                measurementPart.add(sample);
+            }
+        }
+
+        return measurementPart;
+    }
+
 
     public List<Measurand> getAveragedSample(List< List<Measurand> > samplesToAverage) {
         List<Measurand> averagedSample = new ArrayList<>();
@@ -72,49 +103,36 @@ public class XlsPresenter {
         for (List<Measurand> sample : samplesToAverage) {
             //Fill new list with copy of measurands from first sample
             if (averagedSample.isEmpty()) {
+
                 for (Measurand measurand : sample) {
                     averagedSample.add(new Measurand(measurand));
                 }
-            }
-            //Sum only measurands with Double value
-            for (Measurand measurand : sample) {
-                if (measurandGetter.getValue(measurand) instanceof Double) {
-                    int measurandIndex = sample.indexOf(measurand);
-                    double sumValue = measurand.getNumericValue() + averagedSample.get(measurandIndex).getNumericValue();
-                    averagedSample.set(measurandIndex, new Measurand(measurand.getComponent(), sumValue));
-                }
-            }
 
+            } else {
+
+                //Sum only measurands with Double value
+                for (Measurand measurand : sample) {
+                    if (measurandGetter.getValue(measurand) instanceof Double) {
+                        int measurandIndex = sample.indexOf(measurand);
+                        double sumValue = measurand.getNumericValue() + averagedSample.get(measurandIndex).getNumericValue();
+                        averagedSample.set(measurandIndex, new Measurand(measurand.getComponent(), sumValue));
+                    }
+                }
+
+            }
         }
+
         //Calculate averages from sums
         for (int i=0; i<averagedSample.size(); i++) {
             Measurand measurand = averagedSample.get(i);
             if (measurandGetter.getValue(measurand) instanceof Double) {
-                double averagedValue = measurand.getNumericValue()/samplesToAverage.size();
+                double averagedValue = measurand.getNumericValue() / (samplesToAverage.size());
                 Measurand replacement = new Measurand(measurand.getComponent(), averagedValue);
                 averagedSample.add(i, replacement);
                 averagedSample.remove(measurand);
             }
         }
         return averagedSample;
-    }
-
-    public List< List<Measurand> > getFirstSamplesFromPeriod(List< List<Measurand> > measurement, int secPeriod){
-        List< List<Measurand> > measurementPart = new ArrayList<>();
-        LocalTime firstSampleTime;
-        LocalTime currentSampleTime;
-
-        for (List<Measurand> sample : measurement) {
-            firstSampleTime = measurandGetter.getSampleTime( measurement.iterator().next() );
-            currentSampleTime = measurandGetter.getSampleTime(sample);
-            if ( currentSampleTime.isAfter(firstSampleTime.plusSeconds(secPeriod-1)) ) {
-                return measurementPart;
-            } else {
-                measurementPart.add(sample);
-            }
-        }
-
-        return measurementPart;
     }
 
 }

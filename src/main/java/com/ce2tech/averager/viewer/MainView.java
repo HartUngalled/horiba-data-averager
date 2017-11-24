@@ -4,8 +4,7 @@ import lombok.Getter;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import java.time.LocalTime;
 
 public class MainView extends JFrame {
 
@@ -58,40 +57,22 @@ public class MainView extends JFrame {
         JMenuItem saveFile = new JMenuItem("Save");
         JMenuItem closeApp = new JMenuItem("Close");
         JMenu calculations = new JMenu("Calculations");
-        JMenuItem averageData = new JMenuItem("Convert to 1-min average");
+        JMenuItem averageData60 = new JMenuItem("Convert to 1-min average");
+        JMenuItem averageData3600 = new JMenuItem("Convert to 1-hour average");
+        JMenuItem averageCustom = new JMenuItem("Convert custom average");
         JMenu help = new JMenu("Help");
         JMenuItem aboutApp = new JMenuItem("About Application");
 
-        openFile.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                ChooseFile cf = new ChooseFile(dataPanel, e.getActionCommand());
-            }
-        });
-
-        saveFile.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                ChooseFile cf = new ChooseFile(dataPanel, e.getActionCommand());
-            }
-        });
-
-        averageData.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                dataPanel.averageData();
-            }
-        });
-
-        aboutApp.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
+        openFile.addActionListener( (e) -> new ChooseFile(dataPanel, e.getActionCommand()) );
+        saveFile.addActionListener( (e) -> new ChooseFile(dataPanel, e.getActionCommand()) );
+        averageData60.addActionListener( (e) -> dataPanel.averageData(60, LocalTime.MIN, LocalTime.MAX) );
+        averageData3600.addActionListener( (e) -> dataPanel.averageData(3600, LocalTime.MIN, LocalTime.MAX) );
+        averageCustom.addActionListener( (e) -> dataPanel.averageData(60, LocalTime.of(14,20), LocalTime.of(15,10)));
+        aboutApp.addActionListener( (e) ->
                 JOptionPane.showMessageDialog(dataPanel, "Program was created by Michal \"Lasuch\" Garus.\n" +
                         "If you need any help you can buy a box of cakes and come to me directly.\n" +
                         "You can also try to email me, not guarantee I'll response without cakes.\n" +
-                        "m.garus@ce2tech.pl", "About Application", JOptionPane.INFORMATION_MESSAGE);
-            }
-        });
+                        "m.garus@ce2tech.pl", "About Application", JOptionPane.INFORMATION_MESSAGE) );
 
         mainMenuBar.add(menuFile);
         menuFile.add(openFile);
@@ -99,7 +80,9 @@ public class MainView extends JFrame {
         menuFile.addSeparator();
         menuFile.add(closeApp);
         mainMenuBar.add(calculations);
-        calculations.add(averageData);
+        calculations.add(averageData60);
+        calculations.add(averageData3600);
+        calculations.add(averageCustom);
         mainMenuBar.add(help);
         help.add(aboutApp);
         setJMenuBar(mainMenuBar);
