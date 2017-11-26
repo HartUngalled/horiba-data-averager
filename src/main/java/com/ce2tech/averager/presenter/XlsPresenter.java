@@ -13,11 +13,13 @@ public class XlsPresenter {
     private TransferObject dto;
     private MeasurandValueGetter measurandGetter = MeasurandValueGetter.getChainOfResponsibility();
 
+    //CONSTRUCTOR
     public XlsPresenter(String filePath) {
         dao = new XlsDAO(filePath);
         dto = getData();
     }
 
+    //METHODS
     public void setData(String filePatch) {
         dao.setData(dto, filePatch);
     }
@@ -60,7 +62,6 @@ public class XlsPresenter {
         List< List<Measurand> > samplesFromPeriod;
         List< Measurand > firstSample;
 
-
         while(!measurement.isEmpty()) {
             firstSample = measurement.get(0);
             if (startTime.equals(LocalTime.MIN)) startTime = measurandGetter.getSampleTime(firstSample);
@@ -79,7 +80,7 @@ public class XlsPresenter {
     }
 
 
-    public List< List<Measurand> > getFirstSamplesFromPeriod(List< List<Measurand> > measurement, int secPeriod, LocalTime beginningTime){
+    private List< List<Measurand> > getFirstSamplesFromPeriod(List< List<Measurand> > measurement, int secPeriod, LocalTime beginningTime){
         List< List<Measurand> > measurementPart = new ArrayList<>();
         LocalTime currentSampleTime;
 
@@ -96,20 +97,17 @@ public class XlsPresenter {
     }
 
 
-    public List<Measurand> getAveragedSample(List< List<Measurand> > samplesToAverage) {
+    private List<Measurand> getAveragedSample(List< List<Measurand> > samplesToAverage) {
         List<Measurand> averagedSample = new ArrayList<>();
         Collections.reverse(samplesToAverage);
 
         for (List<Measurand> sample : samplesToAverage) {
             //Fill new list with copy of measurands from first sample
             if (averagedSample.isEmpty()) {
-
                 for (Measurand measurand : sample) {
                     averagedSample.add(new Measurand(measurand));
                 }
-
             } else {
-
                 //Sum only measurands with Double value
                 for (Measurand measurand : sample) {
                     if (measurandGetter.getValue(measurand) instanceof Double) {
@@ -118,7 +116,6 @@ public class XlsPresenter {
                         averagedSample.set(measurandIndex, new Measurand(measurand.getComponent(), sumValue));
                     }
                 }
-
             }
         }
 

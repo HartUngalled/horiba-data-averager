@@ -22,8 +22,6 @@ public class XlsDAO {
 
     public void setData(TransferObject dto, String filePath) {
         Workbook wb = new HSSFWorkbook();
-        wb.createSheet();
-
         createMeasurementHeaderInWorkbook(wb, dto.getMeasurement());
         createMeasurementInWorkbook(wb, dto.getMeasurement());
         streamToFile(wb, filePath);

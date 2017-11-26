@@ -24,24 +24,6 @@ public class MainView extends JFrame {
         setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         setSize(900, 500);
         setLayout(new BorderLayout(10,10));
-
-//        //Close listener copy-pasted from stackoverflow
-//        addWindowListener( new WindowAdapter()
-//        {
-//            public void windowClosing(WindowEvent e)
-//            {
-//                JFrame frame = (JFrame)e.getSource();
-//
-//                int result = JOptionPane.showConfirmDialog(
-//                        frame,
-//                        "Are you sure you want to exit the application?",
-//                        "Exit Application",
-//                        JOptionPane.YES_NO_OPTION);
-//
-//                if (result == JOptionPane.YES_OPTION)
-//                    frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-//            }
-//        });
     }
 
     private void initDataPanel() {
@@ -67,7 +49,7 @@ public class MainView extends JFrame {
         saveFile.addActionListener( (e) -> new ChooseFile(dataPanel, e.getActionCommand()) );
         averageData60.addActionListener( (e) -> dataPanel.averageData(60, LocalTime.MIN, LocalTime.MAX) );
         averageData3600.addActionListener( (e) -> dataPanel.averageData(3600, LocalTime.MIN, LocalTime.MAX) );
-        averageCustom.addActionListener( (e) -> dataPanel.averageData(60, LocalTime.of(14,20), LocalTime.of(15,10)));
+        averageCustom.addActionListener( (e) -> dataPanel.averageData(60, LocalTime.of(14, 30), LocalTime.of(15,30)) );
         aboutApp.addActionListener( (e) ->
                 JOptionPane.showMessageDialog(dataPanel, "Program was created by Michal \"Lasuch\" Garus.\n" +
                         "If you need any help you can buy a box of cakes and come to me directly.\n" +

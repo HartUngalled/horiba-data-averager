@@ -83,7 +83,7 @@ public class XlsOpertions {
 
 
     public static void createMeasurementHeaderInWorkbook(Workbook wb, List< List<Measurand> > measurement) {
-        if (wb.getNumberOfSheets() == 0) return;
+        if (wb.getNumberOfSheets() == 0) wb.createSheet();
         Sheet sheet = wb.getSheetAt( wb.getActiveSheetIndex() );
         Row row = sheet.createRow(sheet.getPhysicalNumberOfRows());
 
@@ -95,23 +95,18 @@ public class XlsOpertions {
         headerStyle.setAlignment(HorizontalAlignment.CENTER);
 
         //Create header
-        measurement.spliterator().tryAdvance(new Consumer<List<Measurand>>() {
-            @Override
-            public void accept(List<Measurand> sample) {
-                int columnIndex = 0;
-                for(Measurand measurand : sample) {
-                    Cell cell = row.createCell(columnIndex++, CellType.STRING);
-                    cell.setCellValue( measurand.getComponent() );
-                    cell.setCellStyle( headerStyle );
-                }
-            }
-        });
+        measurement.spliterator().tryAdvance(
+                (sample) -> {   int columnIndex = 0;
+                                for(Measurand measurand : sample) {
+                                    Cell cell = row.createCell(columnIndex++, CellType.STRING);
+                                    cell.setCellValue( measurand.getComponent() );
+                                    cell.setCellStyle( headerStyle );
+                                }   });
     }
 
 
     public static void createMeasurementInWorkbook(Workbook wb, List< List<Measurand> > measurement) {
-        if (wb.getNumberOfSheets() == 0) return;
-
+        if (wb.getNumberOfSheets() == 0) wb.createSheet();
         Sheet sheet = wb.getSheetAt( wb.getActiveSheetIndex() );
         Row row;
         Cell cell;
