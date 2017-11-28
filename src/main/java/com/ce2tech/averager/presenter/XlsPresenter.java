@@ -66,7 +66,7 @@ public class XlsPresenter {
             firstSample = measurement.get(0);
             if (startTime.equals(LocalTime.MIN)) startTime = measurandGetter.getSampleTime(firstSample);
             if (    measurandGetter.getSampleTime(firstSample).isBefore(startTime) ||
-                    measurandGetter.getSampleTime(firstSample).isAfter(stopTime.minusSeconds(secondsPeriod)))
+                    startTime.isAfter(stopTime.minusSeconds(secondsPeriod)))
                 measurement.remove(firstSample);
             else {
                 samplesFromPeriod = getFirstSamplesFromPeriod(measurement, secondsPeriod, startTime);
