@@ -41,7 +41,7 @@ public class MainView extends JFrame {
         JMenu calculations = new JMenu("Calculations");
         JMenuItem averageData60 = new JMenuItem("Convert to 1-min average");
         JMenuItem averageData3600 = new JMenuItem("Convert to 1-hour average");
-        JMenuItem averageCustom = new JMenuItem("Convert custom average");
+        JMenuItem averageCustom = new JMenuItem("Convert to custom average");
         JMenu help = new JMenu("Help");
         JMenuItem aboutApp = new JMenuItem("About Application");
 

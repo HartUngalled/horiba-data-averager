@@ -83,7 +83,7 @@ public class XlsOpertions {
 
 
     public static void createMeasurementHeaderInWorkbook(Workbook wb, List< List<Measurand> > measurement) {
-        if (wb.getNumberOfSheets() == 0) wb.createSheet();
+        if (wb.getNumberOfSheets() == 0) return;
         Sheet sheet = wb.getSheetAt( wb.getActiveSheetIndex() );
         Row row = sheet.createRow(sheet.getPhysicalNumberOfRows());
 
@@ -106,7 +106,7 @@ public class XlsOpertions {
 
 
     public static void createMeasurementInWorkbook(Workbook wb, List< List<Measurand> > measurement) {
-        if (wb.getNumberOfSheets() == 0) wb.createSheet();
+        if (wb.getNumberOfSheets() == 0) return;
         Sheet sheet = wb.getSheetAt( wb.getActiveSheetIndex() );
         Row row;
         Cell cell;

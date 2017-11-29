@@ -34,8 +34,8 @@ public class DataPanel extends JPanel implements Observer {
     private TableModel createUpToDateModel() {
         TableModel model = new DefaultTableModel(presenter.getDataToDisplay(), presenter.getHeaderToDisplay());
 
-        if (model.getColumnCount()==0) JOptionPane.showMessageDialog(this, "You need to open file with aproppiate " +
-                "\ndata format to perform calculations.", "Wrong file format", JOptionPane.WARNING_MESSAGE);
+        if (model.getColumnCount()==0) JOptionPane.showMessageDialog(this, "Data table to show is empty.",
+                "No data to display", JOptionPane.WARNING_MESSAGE);
 
         return model;
     }

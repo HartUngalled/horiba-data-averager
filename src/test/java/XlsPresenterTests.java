@@ -1,6 +1,7 @@
 import static org.assertj.core.api.Assertions.*;
 
 import com.ce2tech.averager.model.dto.Measurand;
+import com.ce2tech.averager.myutils.measurandgetters.MeasurandValueGetter;
 import com.ce2tech.averager.presenter.XlsPresenter;
 import com.tngtech.java.junit.dataprovider.DataProvider;
 import com.tngtech.java.junit.dataprovider.DataProviderRunner;
@@ -8,6 +9,7 @@ import com.tngtech.java.junit.dataprovider.UseDataProvider;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import java.time.LocalTime;
 import java.util.List;
 
 @RunWith(DataProviderRunner.class)
@@ -18,12 +20,13 @@ public class XlsPresenterTests {
     @DataProvider
     public static String[] filePathProvider() {
         return new String[] {
-                "testfile_tensecounds_no_temp.xls",
-                "testfile_tensecounds_no.xls",
-                "testfile_tensecounds.xls",
-                "testfile_oneminute.xls",
+                "testFile_tenSeconds_nox_temp.xls",
+                "testFile_tenSeconds_nox.xls",
+                "testFile_tenSeconds.xls",
+                "testFile_oneMinute.xls",
+                "testFile_messedUp.xls",
                 //Wrong files
-                "some_random_workbook.xls",
+                "testFile_randomWorkbook.xls",
                 "wrong_file_format.jpg",
                 ""};
     }
@@ -40,9 +43,8 @@ public class XlsPresenterTests {
         String[] headerArray = presenter.getHeaderToDisplay();
 
         //Then
-        for (List<Measurand> sample : measurement) {
+        for (List<Measurand> sample : measurement)
             assertThat(headerArray.length).isEqualTo(sample.size());
-        }
     }
 
 
@@ -58,11 +60,7 @@ public class XlsPresenterTests {
 
         //Then
         assertThat(dataArray.length).isEqualTo(measurement.size());
-        for (int i=0; i<measurement.size(); i++) {
+        for (int i=0; i<measurement.size(); i++)
             assertThat(dataArray[i].length).isEqualTo(measurement.get(i).size());
-        }
     }
-
-
-
 }

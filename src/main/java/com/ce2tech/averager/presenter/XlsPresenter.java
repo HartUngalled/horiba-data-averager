@@ -56,7 +56,7 @@ public class XlsPresenter {
 
 
 
-    public void averageFromStartToStop(int secondsPeriod, LocalTime startTime, LocalTime stopTime) {
+    public List< List<Measurand> > averageFromStartToStop(int secondsPeriod, LocalTime startTime, LocalTime stopTime) {
         List< List<Measurand> > measurement = new ArrayList<>(dto.getMeasurement());
         List< List<Measurand> > averagedMeasurement = new ArrayList<>();
         List< List<Measurand> > samplesFromPeriod;
@@ -77,6 +77,7 @@ public class XlsPresenter {
         }
 
         dto.setMeasurement(averagedMeasurement);
+        return averagedMeasurement;
     }
 
 

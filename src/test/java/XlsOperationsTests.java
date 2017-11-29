@@ -42,12 +42,13 @@ public class XlsOperationsTests {
     public static Object[][] fileSizeProvider() {
         return new Object[][]{
                 //{file_path, file_samples_length, file_measurement_length_without_header}
-                {"testfile_tensecounds_no_temp.xls", 9, 738},
-                {"testfile_tensecounds_no.xls", 8, 446},
-                {"testfile_tensecounds.xls", 7, 363},
-                {"testfile_oneminute.xls", 7, 61},
+                {"testFile_tenSeconds_nox_temp.xls", 9, 738},
+                {"testFile_tenSeconds_nox.xls", 8, 446},
+                {"testFile_tenSeconds.xls", 7, 363},
+                {"testFile_oneMinute.xls", 7, 61},
+                {"testFile_messedUp.xls", 5, 2435},
                 //Wrong files
-                {"some_random_workbook.xls", 0, 0},
+                {"testFile_randomWorkbook.xls", 0, 0},
                 {"wrong-file-name.jpg", 0, 0},
                 {"", 0, 0}
         };
@@ -64,9 +65,8 @@ public class XlsOperationsTests {
 
         //Then
         assertThat(measurement.size()).isEqualTo(testFileMeasurementSize);
-        for (List<Measurand> sample : measurement) {
+        for (List<Measurand> sample : measurement)
             assertThat(sample.size()).isEqualTo(testFileSamplesSize);
-        }
     }
 
     @Test
@@ -80,9 +80,8 @@ public class XlsOperationsTests {
 
         //Then
         assertThat(testSheet.getPhysicalNumberOfRows()).isEqualTo(1);
-        for (Row row : testSheet) {
+        for (Row row : testSheet)
             assertThat(row.getPhysicalNumberOfCells()).isEqualTo(4);
-        }
     }
 
     @Test
@@ -109,9 +108,8 @@ public class XlsOperationsTests {
 
         //Then
         assertThat(testSheet.getPhysicalNumberOfRows()).isEqualTo(2);
-        for (Row row : testSheet) {
+        for (Row row : testSheet)
             assertThat(row.getPhysicalNumberOfCells()).isEqualTo(4);
-        }
     }
 
     @Test
@@ -125,9 +123,8 @@ public class XlsOperationsTests {
 
         //Then
         assertThat(testSheet.getPhysicalNumberOfRows()).isEqualTo(3);
-        for (Row row : testSheet) {
+        for (Row row : testSheet)
             assertThat(row.getPhysicalNumberOfCells()).isEqualTo(4);
-        }
     }
 
     @Test
@@ -154,9 +151,8 @@ public class XlsOperationsTests {
 
         //Then
         assertThat(testSheet.getPhysicalNumberOfRows()).isEqualTo(6);
-        for (Row row : testSheet) {
+        for (Row row : testSheet)
             assertThat(row.getPhysicalNumberOfCells()).isEqualTo(4);
-        }
     }
 
 }

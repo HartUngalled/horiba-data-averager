@@ -19,10 +19,11 @@ public class XlsDAOTests {
     public static Object[][] fileSizeProvider() {
         return new Object[][]{
                 //{file_path, file_samples_length, file_measurement_length_without_header}
-                {"testfile_tensecounds_no_temp.xls", 9, 738},
-                {"testfile_tensecounds_no.xls", 8, 446},
-                {"testfile_tensecounds.xls", 7, 363},
-                {"testfile_oneminute.xls", 7, 61},
+                {"testFile_tenSeconds_nox_temp.xls", 9, 738},
+                {"testFile_tenSeconds_nox.xls", 8, 446},
+                {"testFile_tenSeconds.xls", 7, 363},
+                {"testFile_oneMinute.xls", 7, 61},
+                {"testFile_messedUp.xls", 5, 2435},
                 //Wrong files
                 {"some_random_workbook.xls", 0, 0},
                 {"wrong-file-name.jpg", 0, 0},
@@ -42,10 +43,8 @@ public class XlsDAOTests {
 
         //Then
         assertThat(dto.getMeasurement().size()).isEqualTo(testMeasurementSize);
-        for (List<Measurand> sample : dto.getMeasurement()) {
+        for (List<Measurand> sample : dto.getMeasurement())
             assertThat(sample.size()).isEqualTo(testSamplesSize);
-        }
-
     }
 
 
@@ -62,10 +61,7 @@ public class XlsDAOTests {
 
         //Then
         assertThat(copiedData.getMeasurement().size()).isEqualTo(testMeasurementSize);
-        for (List<Measurand> copiedSample : copiedData.getMeasurement()) {
+        for (List<Measurand> copiedSample : copiedData.getMeasurement())
             assertThat(copiedSample.size()).isEqualTo(testSamplesSize);
-        }
-
     }
-
 }
