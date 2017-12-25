@@ -1,6 +1,6 @@
 package com.ce2tech.averager.viewer;
 
-import com.ce2tech.averager.myutils.Observer;
+import com.ce2tech.averager.myutils.observer.Observer;
 import com.ce2tech.averager.presenter.XlsPresenter;
 
 import javax.swing.*;
@@ -28,6 +28,15 @@ public class DataPanel extends JPanel implements Observer {
 
     public void averageData(int secoundsPeriod, LocalTime start, LocalTime stop) {
         presenter.averageFromStartToStop(secoundsPeriod, start, stop);
+        refreshDataTable();
+    }
+
+    public void undo() {
+        presenter.undo();
+        refreshDataTable();
+    }
+
+    private void refreshDataTable() {
         dataTable.setModel(createUpToDateModel());
     }
 

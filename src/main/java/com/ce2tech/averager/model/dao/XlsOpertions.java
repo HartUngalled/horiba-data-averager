@@ -2,7 +2,7 @@ package com.ce2tech.averager.model.dao;
 
 import com.ce2tech.averager.model.dto.AcceptableComponents;
 import com.ce2tech.averager.model.dto.Measurand;
-import com.ce2tech.averager.myutils.measurandgetters.MeasurandValueGetter;
+import com.ce2tech.averager.myutils.MeasurandValueGetter;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.poifs.filesystem.NPOIFSFileSystem;
 import org.apache.poi.ss.usermodel.*;
@@ -13,7 +13,6 @@ import java.io.IOException;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.*;
-import java.util.function.Consumer;
 
 public class XlsOpertions {
 
@@ -52,7 +51,7 @@ public class XlsOpertions {
 
                 //Throw RuntimeException and break loading data when sample have no time value
                 //(for example whole row is string type)
-                MeasurandValueGetter.getChainOfResponsibility().getSampleTime(sample);
+                MeasurandValueGetter.getSampleTime(sample);
                 measurement.add(sample);
 
             }

@@ -1,7 +1,6 @@
 import static org.assertj.core.api.Assertions.*;
 
 import com.ce2tech.averager.model.dto.Measurand;
-import com.ce2tech.averager.myutils.measurandgetters.MeasurandValueGetter;
 import com.ce2tech.averager.presenter.XlsPresenter;
 import com.tngtech.java.junit.dataprovider.DataProvider;
 import com.tngtech.java.junit.dataprovider.DataProviderRunner;
@@ -9,7 +8,6 @@ import com.tngtech.java.junit.dataprovider.UseDataProvider;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import java.time.LocalTime;
 import java.util.List;
 
 @RunWith(DataProviderRunner.class)

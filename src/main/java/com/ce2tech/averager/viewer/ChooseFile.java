@@ -3,8 +3,8 @@ package com.ce2tech.averager.viewer;
 import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
-import com.ce2tech.averager.myutils.Observer;
-import com.ce2tech.averager.myutils.Subject;
+import com.ce2tech.averager.myutils.observer.Observer;
+import com.ce2tech.averager.myutils.observer.Subject;
 
 import java.awt.*;
 import java.util.ArrayList;

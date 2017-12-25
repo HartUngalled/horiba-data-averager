@@ -3,7 +3,10 @@ package com.ce2tech.averager.presenter;
 import com.ce2tech.averager.model.dto.Measurand;
 import com.ce2tech.averager.model.dto.TransferObject;
 import com.ce2tech.averager.model.dao.XlsDAO;
-import com.ce2tech.averager.myutils.measurandgetters.MeasurandValueGetter;
+import com.ce2tech.averager.myutils.MeasurandValueGetter;
+import com.ce2tech.averager.myutils.memento.Caretaker;
+import com.ce2tech.averager.myutils.memento.Memento;
+
 import java.time.LocalTime;
 import java.util.*;
 
@@ -11,12 +14,13 @@ public class XlsPresenter {
 
     private XlsDAO dao;
     private TransferObject dto;
-    private MeasurandValueGetter measurandGetter = MeasurandValueGetter.getChainOfResponsibility();
+    private Caretaker caretaker;
 
     //CONSTRUCTOR
     public XlsPresenter(String filePath) {
         dao = new XlsDAO(filePath);
         dto = getData();
+        caretaker = new Caretaker();
     }
 
     //METHODS
@@ -26,6 +30,14 @@ public class XlsPresenter {
 
     public TransferObject getData() {
         return dao.getData();
+    }
+
+    public void undo() {
+        Memento memento = caretaker.getMemento();
+
+        if (memento != null) {
+            dto = memento.getDto();
+        }
     }
 
     public String[] getHeaderToDisplay() {
@@ -47,7 +59,7 @@ public class XlsPresenter {
 
         for (int i=0; i<columnLength; i++) {
             for (int j=0; j<rowLength; j++) {
-                measurementAsTable[i][j] = measurandGetter.getValue( measurement.get(i).get(j) );
+                measurementAsTable[i][j] = MeasurandValueGetter.getValue( measurement.get(i).get(j) );
             }
         }
 
@@ -64,18 +76,27 @@ public class XlsPresenter {
 
         while(!measurement.isEmpty()) {
             firstSample = measurement.get(0);
-            if (startTime.equals(LocalTime.MIN)) startTime = measurandGetter.getSampleTime(firstSample);
-            if (    measurandGetter.getSampleTime(firstSample).isBefore(startTime) ||
-                    startTime.isAfter(stopTime.minusSeconds(secondsPeriod)))
+
+            if ( startTime.equals(LocalTime.MIN) ) {
+                startTime = MeasurandValueGetter.getSampleTime(firstSample);
+            }
+
+            if (    MeasurandValueGetter.getSampleTime(firstSample).isBefore(startTime) ||
+                    startTime.isAfter(stopTime.minusSeconds(secondsPeriod))) {
                 measurement.remove(firstSample);
+            }
             else {
                 samplesFromPeriod = getFirstSamplesFromPeriod(measurement, secondsPeriod, startTime);
                 measurement.removeAll(samplesFromPeriod);
-                if (!samplesFromPeriod.isEmpty()) averagedMeasurement.add( getAveragedSample(samplesFromPeriod) );
+
+                if (!samplesFromPeriod.isEmpty())
+                    averagedMeasurement.add( getAveragedSample(samplesFromPeriod) );
+
                 startTime = startTime.plusSeconds( secondsPeriod );
             }
         }
 
+        caretaker.addMemento( new Memento( dtoDeepCopy(dto) ) );
         dto.setMeasurement(averagedMeasurement);
         return averagedMeasurement;
     }
@@ -86,7 +107,7 @@ public class XlsPresenter {
         LocalTime currentSampleTime;
 
         for (List<Measurand> sample : measurement) {
-            currentSampleTime = measurandGetter.getSampleTime(sample);
+            currentSampleTime = MeasurandValueGetter.getSampleTime(sample);
             if ( !currentSampleTime.isBefore(beginningTime.plusSeconds(secPeriod)) ) {
                 return measurementPart;
             } else {
@@ -111,7 +132,7 @@ public class XlsPresenter {
             } else {
                 //Sum only measurands with Double value
                 for (Measurand measurand : sample) {
-                    if (measurandGetter.getValue(measurand) instanceof Double) {
+                    if (MeasurandValueGetter.getValue(measurand) instanceof Double) {
                         int measurandIndex = sample.indexOf(measurand);
                         double sumValue = measurand.getNumericValue() + averagedSample.get(measurandIndex).getNumericValue();
                         averagedSample.set(measurandIndex, new Measurand(measurand.getComponent(), sumValue));
@@ -123,7 +144,7 @@ public class XlsPresenter {
         //Calculate averages from sums
         for (int i=0; i<averagedSample.size(); i++) {
             Measurand measurand = averagedSample.get(i);
-            if (measurandGetter.getValue(measurand) instanceof Double) {
+            if (MeasurandValueGetter.getValue(measurand) instanceof Double) {
                 double averagedValue = measurand.getNumericValue() / (samplesToAverage.size());
                 Measurand replacement = new Measurand(measurand.getComponent(), averagedValue);
                 averagedSample.add(i, replacement);
@@ -133,4 +154,21 @@ public class XlsPresenter {
         return averagedSample;
     }
 
+    private TransferObject dtoDeepCopy(TransferObject originalDto) {
+        List< List<Measurand> > originalMeasurement = originalDto.getMeasurement();
+        List< List<Measurand> > copiedMeasurement = new ArrayList<>();
+
+        for (List<Measurand> originalSample : originalMeasurement) {
+            List<Measurand> copiedSample = new ArrayList<>();
+            for (Measurand originalMeasurand : originalSample) {
+                Measurand copiedMeasurand = new Measurand(originalMeasurand);
+                copiedSample.add( copiedMeasurand );
+            }
+            copiedMeasurement.add(copiedSample);
+        }
+
+        TransferObject copiedDto = new TransferObject();
+        copiedDto.setMeasurement(copiedMeasurement);
+        return copiedDto;
+    }
 }
