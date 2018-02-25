@@ -9,33 +9,33 @@ import java.time.LocalTime;
 public class Measurand {
 
     private String component;
-    private LocalDate dateValue;
     private LocalTime timeValue;
+    private LocalDate dateValue;
     private Double numericValue;
     private String errorValue;
 
-    public Measurand(String component, LocalDate dateValue) {
-        this.component = component;
-        this.dateValue = dateValue;
-    }
-    public Measurand(String component, LocalTime timeValue) {
-        this.component = component;
-        this.timeValue = timeValue;
-    }
-    public Measurand(String component, Double numericValue) {
-        this.component = component;
-        this.numericValue = numericValue;
-    }
-    public Measurand(String component, String errorValue) {
-        this.component = component;
-        this.errorValue = errorValue;
-    }
     public Measurand(Measurand measurandToCopy) {
         this.component = measurandToCopy.getComponent();
         this.dateValue = measurandToCopy.getDateValue();
         this.timeValue = measurandToCopy.getTimeValue();
         this.numericValue = measurandToCopy.getNumericValue();
         this.errorValue = measurandToCopy.getErrorValue();
+    }
+
+    public Measurand(String component, Object value) {
+        this.component = component;
+
+        if (value instanceof LocalTime)
+            timeValue = (LocalTime) value;
+
+        else if (value instanceof LocalDate)
+            dateValue = (LocalDate) value;
+
+        else if (value instanceof Double)
+            numericValue = (Double) value;
+
+        else if (value instanceof String)
+            errorValue = (String) value;
     }
 
 }

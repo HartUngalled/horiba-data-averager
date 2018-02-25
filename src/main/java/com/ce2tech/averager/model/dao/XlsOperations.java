@@ -1,8 +1,8 @@
 package com.ce2tech.averager.model.dao;
 
-import com.ce2tech.averager.model.dto.AcceptableComponents;
 import com.ce2tech.averager.model.dto.Measurand;
 import com.ce2tech.averager.myutils.MeasurandValueGetter;
+import org.apache.poi.EmptyFileException;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.poifs.filesystem.NPOIFSFileSystem;
 import org.apache.poi.ss.usermodel.*;
@@ -14,72 +14,115 @@ import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.*;
 
-public class XlsOpertions {
+import static com.ce2tech.averager.model.dto.AcceptableComponents.isAcceptableMeasurand;
+import static com.ce2tech.averager.myutils.DateTimeUtils.convertToLocalDate;
+import static com.ce2tech.averager.myutils.DateTimeUtils.convertToLocalTime;
 
-    public static List< List<Measurand> > loadMeasurementFromFile(String filePath)  {
+public class XlsOperations {
+
+    public List< List<Measurand> > loadMeasurementFromFile(String filePath)  {
         List< List<Measurand> > measurement = new ArrayList<>();
 
-        //Create virtual workbook from file
         try ( NPOIFSFileSystem fs = new NPOIFSFileSystem( new File(filePath) ) ) {
-            Workbook wb = new HSSFWorkbook(fs.getRoot(), true);
-            Iterator<Row> rowIterator = wb.sheetIterator().next().rowIterator();
+            Workbook workbook = new HSSFWorkbook(fs.getRoot(), true);
 
-            //Skip header or return empty list when sheet is empty
-            if (rowIterator.hasNext()) {
-                rowIterator.next();
-            } else {
+            if (isWorkbookEmpty(workbook) || isNotContainHeader(workbook))
                 return measurement;
-            }
 
-            //Iterate for every row of file
-            while (rowIterator.hasNext()) {
-                Iterator<Cell> cellIterator = rowIterator.next().cellIterator();
-                List<Measurand> sample = new ArrayList<>();
+            measurement = createMeasurementFromWorkbook(workbook);
 
-                //Iterate every cell in row
-                while (cellIterator.hasNext()) {
-                    Cell cell = cellIterator.next();
-                    String headerCellValue = cell.getSheet().rowIterator().next().getCell(cell.getColumnIndex()).getStringCellValue();
-                    //Create measurand only for acceptable components
-                    //(in later version GUI will allow to add or remove components)
-                    if ( AcceptableComponents.isAcceptableMeasurand( headerCellValue ) ) {
-                        Measurand measurand = createMeasurand(headerCellValue, cell);
-                        sample.add(measurand);
-                    }
-
-                }
-
-                //Throw RuntimeException and break loading data when sample have no time value
-                //(for example whole row is string type)
-                MeasurandValueGetter.getSampleTime(sample);
-                measurement.add(sample);
-
-            }
-
-        } catch (IOException | RuntimeException e) {
-            System.out.println(e.getMessage());
+        } catch (IOException | EmptyFileException e) {
+            e.printStackTrace();
         }
 
         return measurement;
     }
 
-
-    private static Measurand createMeasurand(String headerCellValue, Cell currentCell) {
-        Measurand measurand;
-        if (currentCell.getCellStyle().getDataFormatString().contains(":")) { //format for time
-            measurand = new Measurand(headerCellValue, currentCell.getDateCellValue().toInstant().atZone(ZoneId.systemDefault()).toLocalTime());
-        } else if (currentCell.getCellStyle().getDataFormatString().contains("/")) { //format for date
-            measurand = new Measurand(headerCellValue, currentCell.getDateCellValue().toInstant().atZone(ZoneId.systemDefault()).toLocalDate());
-        } else if ( currentCell.getCellTypeEnum().equals(CellType.STRING) ) {
-            measurand = new Measurand(headerCellValue, currentCell.getStringCellValue());
-        } else if ( currentCell.getCellTypeEnum().equals(CellType.NUMERIC) ) {
-            measurand = new Measurand(headerCellValue, currentCell.getNumericCellValue());
-        } else {
-            measurand = new Measurand(headerCellValue, "Can't create value");
-        }
-        return measurand;
+    private boolean isWorkbookEmpty(Workbook wb) {
+        if (wb.sheetIterator().hasNext())
+            if (wb.sheetIterator().next().rowIterator().hasNext())
+                return false;
+        return true;
     }
 
+    private boolean isNotContainHeader(Workbook wb) {
+        Row headerRow = wb.sheetIterator().next().rowIterator().next();
+        for (Cell cell : headerRow)
+            if (!isStringFormatted(cell))
+                return true;
+        return false;
+    }
+
+    private List<List<Measurand>> createMeasurementFromWorkbook(Workbook workbook) {
+        List<List<Measurand>> measurement = new ArrayList<>();
+
+        Iterator<Row> workbookRows = workbook.sheetIterator().next().rowIterator();
+        workbookRows.next(); //Skip header
+
+        while (workbookRows.hasNext()) {
+            Row row = workbookRows.next();
+            List<Measurand> sample = createSampleFromRow(row);
+            measurement.add(sample);
+        }
+
+        return measurement;
+    }
+
+    private List<Measurand> createSampleFromRow(Row row) {
+        List<Measurand> sample = new ArrayList<>();
+
+        for (Cell cell : row) {
+            String cellHeader = getCellHeader(cell);
+            if ( isAcceptableMeasurand( cellHeader ) ) {
+                Measurand measurand = createMeasurandFromCell(cellHeader, cell);
+                sample.add(measurand);
+            }
+        }
+
+        return sample;
+    }
+
+    private String getCellHeader(Cell cell) {
+        Sheet sheet = cell.getSheet();
+        Row headerRow = sheet.getRow(0);
+        int headerCellIndex = cell.getColumnIndex();
+
+        Cell headerCell = headerRow.getCell(headerCellIndex);
+        return headerCell.getStringCellValue();
+    }
+
+    private Measurand createMeasurandFromCell(String component, Cell cell) {
+        Object cellValue = "";
+
+        if (isTimeFormatted(cell))
+            cellValue = convertToLocalTime(cell.getDateCellValue());
+        else if (isDateFormatted(cell))
+            cellValue = convertToLocalDate(cell.getDateCellValue());
+        else if (isStringFormatted(cell))
+            cellValue = cell.getStringCellValue();
+        else if (isNumericFormatted(cell))
+            cellValue = cell.getNumericCellValue();
+
+        return new Measurand(component, cellValue);
+    }
+
+    private boolean isTimeFormatted(Cell cell) {
+        String cellFormat = cell.getCellStyle().getDataFormatString();
+        return cellFormat.contains(":");
+    }
+
+    private boolean isDateFormatted(Cell cell) {
+        String cellFormat = cell.getCellStyle().getDataFormatString();
+        return cellFormat.contains("/");
+    }
+
+    private boolean isStringFormatted(Cell cell) {
+        return cell.getCellTypeEnum().equals(CellType.STRING);
+    }
+
+    private boolean isNumericFormatted(Cell cell) {
+        return cell.getCellTypeEnum().equals(CellType.NUMERIC);
+    }
 
     public static void createMeasurementHeaderInWorkbook(Workbook wb, List< List<Measurand> > measurement) {
         if (wb.getNumberOfSheets() == 0) return;
