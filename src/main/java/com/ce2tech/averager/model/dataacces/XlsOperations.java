@@ -132,27 +132,45 @@ public class XlsOperations {
     }
 
 
-    public static void createMeasurementHeaderInWorkbook(Workbook wb, Measurement measurement) {
-        if (wb.getNumberOfSheets() == 0) return;
-        Sheet sheet = wb.getSheetAt( wb.getActiveSheetIndex() );
-        Row row = sheet.createRow(sheet.getPhysicalNumberOfRows());
 
-        //File header style settings
-        Font font = wb.createFont();
-        font.setBold(true);
+    public void createMeasurementHeaderInWorkbook(Measurement measurement, Workbook workbook) {
+        if (isWorkbookContainAnySheets(workbook))
+            addHeaderFromMeasurementToNextRowOfWorkbook(measurement, workbook);
+    }
+
+    private boolean isWorkbookContainAnySheets(Workbook wb) {
+        return wb.getNumberOfSheets() > 0;
+    }
+
+    private void addHeaderFromMeasurementToNextRowOfWorkbook(Measurement measurement, Workbook wb) {
+        measurement.spliterator().tryAdvance(
+                (sample) -> createHeaderInWorkbookFromSample(wb, sample) );
+    }
+
+    private void createHeaderInWorkbookFromSample(Workbook wb, Sample sample) {
+        CellStyle headerStyle = createStyleForHeader(wb);
+        Sheet activeSheet = wb.getSheetAt( wb.getActiveSheetIndex() );
+        Row lastRowOfSheet = activeSheet.createRow( activeSheet.getPhysicalNumberOfRows() );
+
+        int columnIndex = 0;
+        for(Measurand measurand : sample) {
+            Cell cell = lastRowOfSheet.createCell(columnIndex++, CellType.STRING);
+            cell.setCellValue( measurand.getComponent() );
+            cell.setCellStyle( headerStyle );
+        }
+    }
+
+    private CellStyle createStyleForHeader(Workbook wb) {
         CellStyle headerStyle = wb.createCellStyle();
+        Font font = wb.createFont();
+
+        font.setBold(true);
         headerStyle.setFont(font);
         headerStyle.setAlignment(HorizontalAlignment.CENTER);
 
-        //Create header
-        measurement.spliterator().tryAdvance(
-                (sample) -> {   int columnIndex = 0;
-                                for(Measurand measurand : sample) {
-                                    Cell cell = row.createCell(columnIndex++, CellType.STRING);
-                                    cell.setCellValue( measurand.getComponent() );
-                                    cell.setCellStyle( headerStyle );
-                                }   });
+        return headerStyle;
     }
+
 
 
     public static void createMeasurementInWorkbook(Workbook wb, List< List<Measurand> > measurement) {

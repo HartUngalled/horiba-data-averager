@@ -40,7 +40,8 @@ public class XlsOperationsTests {
         testMeasurementAsList.add(testSample2);
         testMeasurementAsList.add(testSample3);
 
-        testMeasurement = new Measurement(testMeasurementAsList);
+        testMeasurement = new Measurement();
+        testMeasurement.setMeasurement(testMeasurementAsList);
     }
 
     @DataProvider
@@ -81,7 +82,7 @@ public class XlsOperationsTests {
         Sheet testSheet = testWorkbook.createSheet();
 
         //When
-        XlsOperations.createMeasurementHeaderInWorkbook(testWorkbook, testMeasurement);
+        fileOperator.createMeasurementHeaderInWorkbook(testMeasurement, testWorkbook);
 
         //Then
         assertThat(testSheet.getPhysicalNumberOfRows()).isEqualTo(1);
@@ -95,7 +96,7 @@ public class XlsOperationsTests {
         Workbook testWorkbook = new HSSFWorkbook();
 
         //When
-        XlsOperations.createMeasurementHeaderInWorkbook(testWorkbook, testMeasurement);
+        fileOperator.createMeasurementHeaderInWorkbook(testMeasurement, testWorkbook);
 
         //Then
         assertThat(testWorkbook.getNumberOfSheets()).isEqualTo(0);
@@ -108,8 +109,8 @@ public class XlsOperationsTests {
         Sheet testSheet = testWorkbook.createSheet();
 
         //When
-        XlsOperations.createMeasurementHeaderInWorkbook(testWorkbook, testMeasurement);
-        XlsOperations.createMeasurementHeaderInWorkbook(testWorkbook, testMeasurement);
+        fileOperator.createMeasurementHeaderInWorkbook(testMeasurement, testWorkbook);
+        fileOperator.createMeasurementHeaderInWorkbook(testMeasurement, testWorkbook);
 
         //Then
         assertThat(testSheet.getPhysicalNumberOfRows()).isEqualTo(2);

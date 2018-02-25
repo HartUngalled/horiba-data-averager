@@ -23,7 +23,7 @@ public class XlsDAO {
         Workbook wb = new HSSFWorkbook();
         wb.createSheet();
 
-        createMeasurementHeaderInWorkbook(wb, dto);
+        fileOperator.createMeasurementHeaderInWorkbook(dto, wb);
         createMeasurementInWorkbook(wb, dto.getMeasurement());
         streamToFile(wb, filePath);
     }
