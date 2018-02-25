@@ -1,5 +1,6 @@
-import com.ce2tech.averager.model.dao.XlsOperations;
-import com.ce2tech.averager.model.dto.Measurand;
+import com.ce2tech.averager.model.dataacces.XlsOperations;
+import com.ce2tech.averager.model.dataobjects.Measurand;
+import com.ce2tech.averager.model.dataobjects.Measurement;
 import com.tngtech.java.junit.dataprovider.DataProvider;
 import com.tngtech.java.junit.dataprovider.DataProviderRunner;
 import com.tngtech.java.junit.dataprovider.UseDataProvider;
@@ -19,7 +20,8 @@ import static org.assertj.core.api.Assertions.*;
 @RunWith(DataProviderRunner.class)
 public class XlsOperationsTests {
 
-    private List< List<Measurand> > testMeasurement;
+    private List< List<Measurand> > testMeasurementAsList;
+    private Measurement testMeasurement;
     private XlsOperations fileOperator = new XlsOperations();
 
     @Before
@@ -33,10 +35,12 @@ public class XlsOperationsTests {
         List<Measurand> testSample2 = new ArrayList<>(testSample);
         List<Measurand> testSample3 = new ArrayList<>(testSample);
 
-        testMeasurement = new ArrayList<>();
-        testMeasurement.add(testSample);
-        testMeasurement.add(testSample2);
-        testMeasurement.add(testSample3);
+        testMeasurementAsList = new ArrayList<>();
+        testMeasurementAsList.add(testSample);
+        testMeasurementAsList.add(testSample2);
+        testMeasurementAsList.add(testSample3);
+
+        testMeasurement = new Measurement(testMeasurementAsList);
     }
 
     @DataProvider
@@ -59,14 +63,14 @@ public class XlsOperationsTests {
     @UseDataProvider("fileSizeProvider")
     public void shouldReturnListWithDataFromFile(String testFilePath, int testFileSamplesSize, int testFileMeasurementSize) {
         //Given
-        List< List<Measurand> > measurement;
+        Measurement measurement;
 
         //When
         measurement = fileOperator.loadMeasurementFromFile(testFilePath);
 
         //Then
         assertThat(measurement.size()).isEqualTo(testFileMeasurementSize);
-        for (List<Measurand> sample : measurement)
+        for (List<Measurand> sample : measurement.getMeasurement())
             assertThat(sample.size()).isEqualTo(testFileSamplesSize);
     }
 
@@ -120,7 +124,7 @@ public class XlsOperationsTests {
         Sheet testSheet = testWorkbook.createSheet();
 
         //When
-        XlsOperations.createMeasurementInWorkbook(testWorkbook, testMeasurement);
+        XlsOperations.createMeasurementInWorkbook(testWorkbook, testMeasurementAsList);
 
         //Then
         assertThat(testSheet.getPhysicalNumberOfRows()).isEqualTo(3);
@@ -134,7 +138,7 @@ public class XlsOperationsTests {
         Workbook testWorkbook = new HSSFWorkbook();
 
         //When
-        XlsOperations.createMeasurementInWorkbook(testWorkbook, testMeasurement);
+        XlsOperations.createMeasurementInWorkbook(testWorkbook, testMeasurementAsList);
 
         //Then
         assertThat(testWorkbook.getNumberOfSheets()).isEqualTo(0);
@@ -147,8 +151,8 @@ public class XlsOperationsTests {
         Sheet testSheet = testWorkbook.createSheet();
 
         //When
-        XlsOperations.createMeasurementInWorkbook(testWorkbook, testMeasurement);
-        XlsOperations.createMeasurementInWorkbook(testWorkbook, testMeasurement);
+        XlsOperations.createMeasurementInWorkbook(testWorkbook, testMeasurementAsList);
+        XlsOperations.createMeasurementInWorkbook(testWorkbook, testMeasurementAsList);
 
         //Then
         assertThat(testSheet.getPhysicalNumberOfRows()).isEqualTo(6);

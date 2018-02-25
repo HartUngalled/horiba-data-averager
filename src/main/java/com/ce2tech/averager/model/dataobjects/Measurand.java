@@ -1,4 +1,4 @@
-package com.ce2tech.averager.model.dto;
+package com.ce2tech.averager.model.dataobjects;
 
 import lombok.Getter;
 

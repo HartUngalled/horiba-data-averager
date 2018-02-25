@@ -1,6 +1,6 @@
 package com.ce2tech.averager.myutils;
 
-import com.ce2tech.averager.model.dto.Measurand;
+import com.ce2tech.averager.model.dataobjects.Measurand;
 
 import java.time.LocalTime;
 import java.util.List;

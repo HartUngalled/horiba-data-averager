@@ -1,75 +1,82 @@
-package com.ce2tech.averager.model.dao;
+package com.ce2tech.averager.model.dataacces;
 
-import com.ce2tech.averager.model.dto.Measurand;
-import com.ce2tech.averager.myutils.MeasurandValueGetter;
+import com.ce2tech.averager.model.dataobjects.Measurand;
+import com.ce2tech.averager.model.dataobjects.Measurement;
+import com.ce2tech.averager.model.dataobjects.Sample;
 import org.apache.poi.EmptyFileException;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.poifs.filesystem.NPOIFSFileSystem;
-import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.CellStyle;
+import org.apache.poi.ss.usermodel.CellType;
+import org.apache.poi.ss.usermodel.CreationHelper;
+import org.apache.poi.ss.usermodel.Font;
+import org.apache.poi.ss.usermodel.HorizontalAlignment;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Workbook;
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.time.ZoneId;
-import java.util.*;
+import java.util.Date;
+import java.util.Iterator;
+import java.util.List;
 
-import static com.ce2tech.averager.model.dto.AcceptableComponents.isAcceptableMeasurand;
+import static com.ce2tech.averager.model.AcceptableComponents.isAcceptableMeasurand;
 import static com.ce2tech.averager.myutils.DateTimeUtils.convertToLocalDate;
 import static com.ce2tech.averager.myutils.DateTimeUtils.convertToLocalTime;
 
 public class XlsOperations {
 
-    public List< List<Measurand> > loadMeasurementFromFile(String filePath)  {
-        List< List<Measurand> > measurement = new ArrayList<>();
-
+    public Measurement loadMeasurementFromFile(String filePath)  {
         try ( NPOIFSFileSystem fs = new NPOIFSFileSystem( new File(filePath) ) ) {
             Workbook workbook = new HSSFWorkbook(fs.getRoot(), true);
 
-            if (isWorkbookEmpty(workbook) || isNotContainHeader(workbook))
-                return measurement;
-
-            measurement = createMeasurementFromWorkbook(workbook);
+            if (isWorkbookNotEmpty(workbook) && isWorkbookContainHeader(workbook))
+                return createMeasurementFromWorkbook(workbook);
 
         } catch (IOException | EmptyFileException e) {
             e.printStackTrace();
         }
 
-        return measurement;
+        return new Measurement();
     }
 
-    private boolean isWorkbookEmpty(Workbook wb) {
+    private boolean isWorkbookNotEmpty(Workbook wb) {
         if (wb.sheetIterator().hasNext())
             if (wb.sheetIterator().next().rowIterator().hasNext())
-                return false;
-        return true;
-    }
-
-    private boolean isNotContainHeader(Workbook wb) {
-        Row headerRow = wb.sheetIterator().next().rowIterator().next();
-        for (Cell cell : headerRow)
-            if (!isStringFormatted(cell))
                 return true;
         return false;
     }
 
-    private List<List<Measurand>> createMeasurementFromWorkbook(Workbook workbook) {
-        List<List<Measurand>> measurement = new ArrayList<>();
+    private boolean isWorkbookContainHeader(Workbook wb) {
+        Row headerRow = wb.sheetIterator().next().rowIterator().next();
+        for (Cell cell : headerRow)
+            if (!isStringFormatted(cell))
+                return false;
+        return true;
+    }
+
+    private Measurement createMeasurementFromWorkbook(Workbook workbook) {
+        Measurement measurement = new Measurement();
 
         Iterator<Row> workbookRows = workbook.sheetIterator().next().rowIterator();
         workbookRows.next(); //Skip header
 
         while (workbookRows.hasNext()) {
             Row row = workbookRows.next();
-            List<Measurand> sample = createSampleFromRow(row);
+            Sample sample = createSampleFromRow(row);
             measurement.add(sample);
         }
 
         return measurement;
     }
 
-    private List<Measurand> createSampleFromRow(Row row) {
-        List<Measurand> sample = new ArrayList<>();
+    private Sample createSampleFromRow(Row row) {
+        Sample sample = new Sample();
 
         for (Cell cell : row) {
             String cellHeader = getCellHeader(cell);
@@ -124,7 +131,8 @@ public class XlsOperations {
         return cell.getCellTypeEnum().equals(CellType.NUMERIC);
     }
 
-    public static void createMeasurementHeaderInWorkbook(Workbook wb, List< List<Measurand> > measurement) {
+
+    public static void createMeasurementHeaderInWorkbook(Workbook wb, Measurement measurement) {
         if (wb.getNumberOfSheets() == 0) return;
         Sheet sheet = wb.getSheetAt( wb.getActiveSheetIndex() );
         Row row = sheet.createRow(sheet.getPhysicalNumberOfRows());

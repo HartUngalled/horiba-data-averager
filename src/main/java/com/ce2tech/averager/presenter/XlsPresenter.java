@@ -1,8 +1,8 @@
 package com.ce2tech.averager.presenter;
 
-import com.ce2tech.averager.model.dto.Measurand;
-import com.ce2tech.averager.model.dto.TransferObject;
-import com.ce2tech.averager.model.dao.XlsDAO;
+import com.ce2tech.averager.model.dataobjects.Measurand;
+import com.ce2tech.averager.model.dataobjects.Measurement;
+import com.ce2tech.averager.model.dataacces.XlsDAO;
 import com.ce2tech.averager.myutils.MeasurandValueGetter;
 import com.ce2tech.averager.myutils.memento.Caretaker;
 import com.ce2tech.averager.myutils.memento.Memento;
@@ -13,7 +13,7 @@ import java.util.*;
 public class XlsPresenter {
 
     private XlsDAO dao;
-    private TransferObject dto;
+    private Measurement dto;
     private Caretaker caretaker;
 
     //CONSTRUCTOR
@@ -28,7 +28,7 @@ public class XlsPresenter {
         dao.setData(dto, filePatch);
     }
 
-    public TransferObject getData() {
+    public Measurement getData() {
         return dao.getData();
     }
 
@@ -36,7 +36,7 @@ public class XlsPresenter {
         Memento memento = caretaker.getMemento();
 
         if (memento != null) {
-            dto = memento.getDto();
+            dto = memento.getMeasurement();
         }
     }
 
@@ -154,7 +154,7 @@ public class XlsPresenter {
         return averagedSample;
     }
 
-    private TransferObject dtoDeepCopy(TransferObject originalDto) {
+    private Measurement dtoDeepCopy(Measurement originalDto) {
         List< List<Measurand> > originalMeasurement = originalDto.getMeasurement();
         List< List<Measurand> > copiedMeasurement = new ArrayList<>();
 
@@ -167,7 +167,7 @@ public class XlsPresenter {
             copiedMeasurement.add(copiedSample);
         }
 
-        TransferObject copiedDto = new TransferObject();
+        Measurement copiedDto = new Measurement();
         copiedDto.setMeasurement(copiedMeasurement);
         return copiedDto;
     }

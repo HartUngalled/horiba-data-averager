@@ -1,6 +1,6 @@
-import com.ce2tech.averager.model.dao.XlsDAO;
-import com.ce2tech.averager.model.dto.Measurand;
-import com.ce2tech.averager.model.dto.TransferObject;
+import com.ce2tech.averager.model.dataacces.XlsDAO;
+import com.ce2tech.averager.model.dataobjects.Measurand;
+import com.ce2tech.averager.model.dataobjects.Measurement;
 import com.tngtech.java.junit.dataprovider.DataProvider;
 import com.tngtech.java.junit.dataprovider.DataProviderRunner;
 import com.tngtech.java.junit.dataprovider.UseDataProvider;
@@ -36,7 +36,7 @@ public class XlsDAOTests {
     public void shouldCreateDtoWithDataFromFile(String testFilePath, int testSamplesSize, int testMeasurementSize) {
         //Given
         dao = new XlsDAO(testFilePath);
-        TransferObject dto;
+        Measurement dto;
 
         //When
         dto = dao.getData();
@@ -53,7 +53,7 @@ public class XlsDAOTests {
     public void shouldCreateCopyOfFile(String testFilePath, int testSamplesSize, int testMeasurementSize) {
         //Given
         dao = new XlsDAO(testFilePath);
-        TransferObject copiedData;
+        Measurement copiedData;
 
         //When
         dao.setData(dao.getData(), "newFile.xls");
