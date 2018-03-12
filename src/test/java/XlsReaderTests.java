@@ -1,4 +1,5 @@
-import com.ce2tech.averager.model.dataacces.XlsOperations;
+import com.ce2tech.averager.model.dataacces.XlsReader;
+import com.ce2tech.averager.model.dataacces.XlsWriter;
 import com.ce2tech.averager.model.dataobjects.Measurand;
 import com.ce2tech.averager.model.dataobjects.Measurement;
 import com.tngtech.java.junit.dataprovider.DataProvider;
@@ -15,14 +16,16 @@ import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 
+import static com.ce2tech.averager.model.dataacces.XlsWriter.createMeasurementInWorkbook;
 import static org.assertj.core.api.Assertions.*;
 
 @RunWith(DataProviderRunner.class)
-public class XlsOperationsTests {
+public class XlsReaderTests {
 
     private List< List<Measurand> > testMeasurementAsList;
     private Measurement testMeasurement;
-    private XlsOperations fileOperator = new XlsOperations();
+    private XlsReader fileReader = new XlsReader();
+    private XlsWriter fileWriter = new XlsWriter();
 
     @Before
     public void addTestDataToTestMeasurement() {
@@ -67,7 +70,7 @@ public class XlsOperationsTests {
         Measurement measurement;
 
         //When
-        measurement = fileOperator.loadMeasurementFromFile(testFilePath);
+        measurement = fileReader.loadMeasurementFromFile(testFilePath);
 
         //Then
         assertThat(measurement.size()).isEqualTo(testFileMeasurementSize);
@@ -82,7 +85,7 @@ public class XlsOperationsTests {
         Sheet testSheet = testWorkbook.createSheet();
 
         //When
-        fileOperator.createMeasurementHeaderInWorkbook(testMeasurement, testWorkbook);
+        fileWriter.createMeasurementHeaderInWorkbook(testMeasurement, testWorkbook);
 
         //Then
         assertThat(testSheet.getPhysicalNumberOfRows()).isEqualTo(1);
@@ -96,7 +99,7 @@ public class XlsOperationsTests {
         Workbook testWorkbook = new HSSFWorkbook();
 
         //When
-        fileOperator.createMeasurementHeaderInWorkbook(testMeasurement, testWorkbook);
+        fileWriter.createMeasurementHeaderInWorkbook(testMeasurement, testWorkbook);
 
         //Then
         assertThat(testWorkbook.getNumberOfSheets()).isEqualTo(0);
@@ -109,8 +112,8 @@ public class XlsOperationsTests {
         Sheet testSheet = testWorkbook.createSheet();
 
         //When
-        fileOperator.createMeasurementHeaderInWorkbook(testMeasurement, testWorkbook);
-        fileOperator.createMeasurementHeaderInWorkbook(testMeasurement, testWorkbook);
+        fileWriter.createMeasurementHeaderInWorkbook(testMeasurement, testWorkbook);
+        fileWriter.createMeasurementHeaderInWorkbook(testMeasurement, testWorkbook);
 
         //Then
         assertThat(testSheet.getPhysicalNumberOfRows()).isEqualTo(2);
@@ -125,7 +128,7 @@ public class XlsOperationsTests {
         Sheet testSheet = testWorkbook.createSheet();
 
         //When
-        XlsOperations.createMeasurementInWorkbook(testWorkbook, testMeasurementAsList);
+        createMeasurementInWorkbook(testWorkbook, testMeasurementAsList);
 
         //Then
         assertThat(testSheet.getPhysicalNumberOfRows()).isEqualTo(3);
@@ -139,7 +142,7 @@ public class XlsOperationsTests {
         Workbook testWorkbook = new HSSFWorkbook();
 
         //When
-        XlsOperations.createMeasurementInWorkbook(testWorkbook, testMeasurementAsList);
+        createMeasurementInWorkbook(testWorkbook, testMeasurementAsList);
 
         //Then
         assertThat(testWorkbook.getNumberOfSheets()).isEqualTo(0);
@@ -152,8 +155,8 @@ public class XlsOperationsTests {
         Sheet testSheet = testWorkbook.createSheet();
 
         //When
-        XlsOperations.createMeasurementInWorkbook(testWorkbook, testMeasurementAsList);
-        XlsOperations.createMeasurementInWorkbook(testWorkbook, testMeasurementAsList);
+        createMeasurementInWorkbook(testWorkbook, testMeasurementAsList);
+        createMeasurementInWorkbook(testWorkbook, testMeasurementAsList);
 
         //Then
         assertThat(testSheet.getPhysicalNumberOfRows()).isEqualTo(6);
