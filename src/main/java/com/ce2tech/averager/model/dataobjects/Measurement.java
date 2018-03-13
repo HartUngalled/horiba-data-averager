@@ -28,8 +28,7 @@ public class Measurement implements Iterable {
         return measurement.iterator();
     }
 
-    @Override
-    public Spliterator<Sample> spliterator() {
+    public Spliterator<Sample> sampleSpliterator() {
         return measurement.spliterator();
     }
 

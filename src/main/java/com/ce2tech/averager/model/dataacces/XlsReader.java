@@ -24,11 +24,11 @@ public class XlsReader {
 
     private Workbook workbook;
 
-    public Measurement loadMeasurementFromFile(String filePath)  {
+    public Measurement readMeasurementFromFile(String filePath)  {
 
         workbook = tryToGetWorkbookFromFile(filePath);
 
-        if (isWorkbookNotEmpty() && isWorkbookDataContainHeader())
+        if (isWorkbookNotEmpty() && isWorkbookDataContainComponentsRow())
             return createMeasurementFromWorkbook();
         else
             return new Measurement();
@@ -49,10 +49,10 @@ public class XlsReader {
         return false;
     }
 
-    private boolean isWorkbookDataContainHeader() {
-        Row headerRow = workbook.sheetIterator().next().rowIterator().next();
+    private boolean isWorkbookDataContainComponentsRow() {
+        Row componentsRow = workbook.sheetIterator().next().rowIterator().next();
 
-        for (Cell cell : headerRow)
+        for (Cell cell : componentsRow)
             if (!isStringFormatted(cell))
                 return false;
         return true;
@@ -62,7 +62,7 @@ public class XlsReader {
         Measurement measurement = new Measurement();
         Iterator<Row> rows = workbook.sheetIterator().next().rowIterator();
 
-        rows.next(); //Skip data header
+        rows.next(); //Skip components row
         while (rows.hasNext()) {
             Row row = rows.next();
             Sample sample = createSampleFromRow(row);
@@ -76,9 +76,9 @@ public class XlsReader {
         Sample sample = new Sample();
 
         for (Cell cell : row) {
-            String columnHeader = getColumnHeader(cell);
-            if ( isAcceptableMeasurand( columnHeader ) ) {
-                Measurand measurand = createMeasurandFromCell(columnHeader, cell);
+            String component = getColumnComponent(cell);
+            if ( isAcceptableMeasurand( component ) ) {
+                Measurand measurand = createMeasurandFromCell(component, cell);
                 sample.add(measurand);
             }
         }
@@ -86,13 +86,13 @@ public class XlsReader {
         return sample;
     }
 
-    private String getColumnHeader(Cell cell) {
+    private String getColumnComponent(Cell cell) {
         Sheet sheet = cell.getSheet();
-        Row headerRow = sheet.rowIterator().next();
+        Row componentsRow = sheet.rowIterator().next();
         int columnIndex = cell.getColumnIndex();
 
-        Cell headerCell = headerRow.getCell(columnIndex);
-        return headerCell.getStringCellValue();
+        Cell componentCell = componentsRow.getCell(columnIndex);
+        return componentCell.getStringCellValue();
     }
 
     private Measurand createMeasurandFromCell(String component, Cell cell) {

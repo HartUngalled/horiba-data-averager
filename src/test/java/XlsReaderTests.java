@@ -5,8 +5,9 @@ import com.ce2tech.averager.model.dataobjects.Measurement;
 import com.tngtech.java.junit.dataprovider.DataProvider;
 import com.tngtech.java.junit.dataprovider.DataProviderRunner;
 import com.tngtech.java.junit.dataprovider.UseDataProvider;
-import org.apache.poi.hssf.usermodel.HSSFWorkbook;
-import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Workbook;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -16,7 +17,6 @@ import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.ce2tech.averager.model.dataacces.XlsWriter.createMeasurementInWorkbook;
 import static org.assertj.core.api.Assertions.*;
 
 @RunWith(DataProviderRunner.class)
@@ -70,7 +70,7 @@ public class XlsReaderTests {
         Measurement measurement;
 
         //When
-        measurement = fileReader.loadMeasurementFromFile(testFilePath);
+        measurement = fileReader.readMeasurementFromFile(testFilePath);
 
         //Then
         assertThat(measurement.size()).isEqualTo(testFileMeasurementSize);
@@ -81,11 +81,12 @@ public class XlsReaderTests {
     @Test
     public void shouldCreateHeaderInWorkbook() {
         //Given
-        Workbook testWorkbook = new HSSFWorkbook();
-        Sheet testSheet = testWorkbook.createSheet();
+        fileWriter.prepareEmptyWorkbook();
+        Workbook testWorkbook = fileWriter.workbook;
+        Sheet testSheet = testWorkbook.getSheetAt(0);
 
         //When
-        fileWriter.createMeasurementHeaderInWorkbook(testMeasurement, testWorkbook);
+        fileWriter.createMeasurementHeaderInWorkbook(testMeasurement);
 
         //Then
         assertThat(testSheet.getPhysicalNumberOfRows()).isEqualTo(1);
@@ -96,24 +97,25 @@ public class XlsReaderTests {
     @Test
     public void shouldNotCreateHeaderInWorkbookWithoutSheets() {
         //Given
-        Workbook testWorkbook = new HSSFWorkbook();
+        fileWriter.prepareEmptyWorkbook();
 
         //When
-        fileWriter.createMeasurementHeaderInWorkbook(testMeasurement, testWorkbook);
+        fileWriter.createMeasurementHeaderInWorkbook(testMeasurement);
 
         //Then
-        assertThat(testWorkbook.getNumberOfSheets()).isEqualTo(0);
+        assertThat(fileWriter.workbook.getNumberOfSheets()).isEqualTo(0);
     }
 
     @Test
     public void shouldCreateMultipleHeadersInWorkbook() {
         //Given
-        Workbook testWorkbook = new HSSFWorkbook();
-        Sheet testSheet = testWorkbook.createSheet();
+        fileWriter.prepareEmptyWorkbook();
+        Workbook testWorkbook = fileWriter.workbook;
+        Sheet testSheet = testWorkbook.getSheetAt(0);
 
         //When
-        fileWriter.createMeasurementHeaderInWorkbook(testMeasurement, testWorkbook);
-        fileWriter.createMeasurementHeaderInWorkbook(testMeasurement, testWorkbook);
+        fileWriter.createMeasurementHeaderInWorkbook(testMeasurement);
+        fileWriter.createMeasurementHeaderInWorkbook(testMeasurement);
 
         //Then
         assertThat(testSheet.getPhysicalNumberOfRows()).isEqualTo(2);
@@ -124,11 +126,12 @@ public class XlsReaderTests {
     @Test
     public void shouldCreateMeasurementInWorkbook() {
         //Given
-        Workbook testWorkbook = new HSSFWorkbook();
-        Sheet testSheet = testWorkbook.createSheet();
+        fileWriter.prepareEmptyWorkbook();
+        Workbook testWorkbook = fileWriter.workbook;
+        Sheet testSheet = testWorkbook.getSheetAt(0);
 
         //When
-        createMeasurementInWorkbook(testWorkbook, testMeasurementAsList);
+        fileWriter.writeMeasurementToWorkbook(testMeasurementAsList);
 
         //Then
         assertThat(testSheet.getPhysicalNumberOfRows()).isEqualTo(3);
@@ -139,24 +142,25 @@ public class XlsReaderTests {
     @Test
     public void shouldNotCreateMeasurementInWorkbookWithoutSheets() {
         //Given
-        Workbook testWorkbook = new HSSFWorkbook();
+        fileWriter.prepareEmptyWorkbook();
 
         //When
-        createMeasurementInWorkbook(testWorkbook, testMeasurementAsList);
+        fileWriter.writeMeasurementToWorkbook(testMeasurementAsList);
 
         //Then
-        assertThat(testWorkbook.getNumberOfSheets()).isEqualTo(0);
+        assertThat(fileWriter.workbook.getNumberOfSheets()).isEqualTo(0);
     }
 
     @Test
     public void shouldCreateMultipleMeasurementsInWorkbook() {
         //Given
-        Workbook testWorkbook = new HSSFWorkbook();
-        Sheet testSheet = testWorkbook.createSheet();
+        fileWriter.prepareEmptyWorkbook();
+        Workbook testWorkbook = fileWriter.workbook;
+        Sheet testSheet = testWorkbook.getSheetAt(0);
 
         //When
-        createMeasurementInWorkbook(testWorkbook, testMeasurementAsList);
-        createMeasurementInWorkbook(testWorkbook, testMeasurementAsList);
+        fileWriter.writeMeasurementToWorkbook(testMeasurementAsList);
+        fileWriter.writeMeasurementToWorkbook(testMeasurementAsList);
 
         //Then
         assertThat(testSheet.getPhysicalNumberOfRows()).isEqualTo(6);
