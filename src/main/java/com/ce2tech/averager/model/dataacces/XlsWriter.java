@@ -23,10 +23,16 @@ import java.util.List;
 
 public class XlsWriter {
 
-    public Workbook workbook;
+    private Workbook workbook;
 
     public XlsWriter() {
         prepareEmptyWorkbook();
+    }
+
+    public Workbook prepareEmptyWorkbook() {
+        workbook = new HSSFWorkbook();
+        workbook.createSheet();
+        return workbook;
     }
 
     public void tryToSaveWorkbookInFile(String filePath) {
@@ -41,12 +47,6 @@ public class XlsWriter {
     public void writeComponentsRowToNextRowOfWorkbook(Measurement measurement) {
         measurement.sampleSpliterator().tryAdvance(
                 this::createComponentsRowInWorkbookFromSample);
-    }
-
-
-    private void prepareEmptyWorkbook() {
-        workbook = new HSSFWorkbook();
-        workbook.createSheet();
     }
 
 

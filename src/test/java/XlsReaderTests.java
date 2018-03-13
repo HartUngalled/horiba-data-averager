@@ -79,14 +79,13 @@ public class XlsReaderTests {
     }
 
     @Test
-    public void shouldCreateHeaderInWorkbook() {
+    public void shouldCreateComponentRowInWorkbook() {
         //Given
-        fileWriter.prepareEmptyWorkbook();
-        Workbook testWorkbook = fileWriter.workbook;
+        Workbook testWorkbook = fileWriter.prepareEmptyWorkbook();
         Sheet testSheet = testWorkbook.getSheetAt(0);
 
         //When
-        fileWriter.createMeasurementHeaderInWorkbook(testMeasurement);
+        fileWriter.writeComponentsRowToNextRowOfWorkbook(testMeasurement);
 
         //Then
         assertThat(testSheet.getPhysicalNumberOfRows()).isEqualTo(1);
@@ -95,27 +94,14 @@ public class XlsReaderTests {
     }
 
     @Test
-    public void shouldNotCreateHeaderInWorkbookWithoutSheets() {
-        //Given
-        fileWriter.prepareEmptyWorkbook();
-
-        //When
-        fileWriter.createMeasurementHeaderInWorkbook(testMeasurement);
-
-        //Then
-        assertThat(fileWriter.workbook.getNumberOfSheets()).isEqualTo(0);
-    }
-
-    @Test
     public void shouldCreateMultipleHeadersInWorkbook() {
         //Given
-        fileWriter.prepareEmptyWorkbook();
-        Workbook testWorkbook = fileWriter.workbook;
+        Workbook testWorkbook = fileWriter.prepareEmptyWorkbook();
         Sheet testSheet = testWorkbook.getSheetAt(0);
 
         //When
-        fileWriter.createMeasurementHeaderInWorkbook(testMeasurement);
-        fileWriter.createMeasurementHeaderInWorkbook(testMeasurement);
+        fileWriter.writeComponentsRowToNextRowOfWorkbook(testMeasurement);
+        fileWriter.writeComponentsRowToNextRowOfWorkbook(testMeasurement);
 
         //Then
         assertThat(testSheet.getPhysicalNumberOfRows()).isEqualTo(2);
@@ -126,8 +112,7 @@ public class XlsReaderTests {
     @Test
     public void shouldCreateMeasurementInWorkbook() {
         //Given
-        fileWriter.prepareEmptyWorkbook();
-        Workbook testWorkbook = fileWriter.workbook;
+        Workbook testWorkbook = fileWriter.prepareEmptyWorkbook();
         Sheet testSheet = testWorkbook.getSheetAt(0);
 
         //When
@@ -140,22 +125,9 @@ public class XlsReaderTests {
     }
 
     @Test
-    public void shouldNotCreateMeasurementInWorkbookWithoutSheets() {
-        //Given
-        fileWriter.prepareEmptyWorkbook();
-
-        //When
-        fileWriter.writeMeasurementToWorkbook(testMeasurementAsList);
-
-        //Then
-        assertThat(fileWriter.workbook.getNumberOfSheets()).isEqualTo(0);
-    }
-
-    @Test
     public void shouldCreateMultipleMeasurementsInWorkbook() {
         //Given
-        fileWriter.prepareEmptyWorkbook();
-        Workbook testWorkbook = fileWriter.workbook;
+        Workbook testWorkbook = fileWriter.prepareEmptyWorkbook();
         Sheet testSheet = testWorkbook.getSheetAt(0);
 
         //When
