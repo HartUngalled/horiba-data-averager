@@ -11,7 +11,7 @@ import java.util.function.Consumer;
 
 @NoArgsConstructor
 @AllArgsConstructor
-public class Measurement implements Iterable {
+public class Measurement implements Iterable<Sample> {
 
     private List<Sample> measurement = new ArrayList<>();
 

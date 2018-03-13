@@ -15,4 +15,11 @@ public class DateTimeUtils {
         return date.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
     }
 
+    public static Date convertToDate(LocalTime time) {
+        return Date.from(time.atDate(LocalDate.of(1970, 1, 1)).atZone(ZoneId.systemDefault()).toInstant() ) ;
+    }
+
+    public static Date convertToDate(LocalDate date) {
+        return Date.from(date.atStartOfDay(ZoneId.systemDefault()).toInstant());
+    }
 }

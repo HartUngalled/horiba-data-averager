@@ -2,6 +2,7 @@ import com.ce2tech.averager.model.dataacces.XlsReader;
 import com.ce2tech.averager.model.dataacces.XlsWriter;
 import com.ce2tech.averager.model.dataobjects.Measurand;
 import com.ce2tech.averager.model.dataobjects.Measurement;
+import com.ce2tech.averager.model.dataobjects.Sample;
 import com.tngtech.java.junit.dataprovider.DataProvider;
 import com.tngtech.java.junit.dataprovider.DataProviderRunner;
 import com.tngtech.java.junit.dataprovider.UseDataProvider;
@@ -14,7 +15,6 @@ import org.junit.runner.RunWith;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
-import java.util.ArrayList;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.*;
@@ -22,29 +22,21 @@ import static org.assertj.core.api.Assertions.*;
 @RunWith(DataProviderRunner.class)
 public class XlsReaderTests {
 
-    private List< List<Measurand> > testMeasurementAsList;
-    private Measurement testMeasurement;
+    private Measurement testMeasurement = new Measurement();
     private XlsReader fileReader = new XlsReader();
     private XlsWriter fileWriter = new XlsWriter();
 
     @Before
     public void addTestDataToTestMeasurement() {
-        List<Measurand> testSample = new ArrayList<>();
+        Sample testSample = new Sample();
         testSample.add(new Measurand("Data", LocalDate.now()));
         testSample.add(new Measurand("Czas", LocalTime.now()));
         testSample.add(new Measurand("NO[ppm]", "-" ));
         testSample.add(new Measurand("SO2[ppm]", 2.0 ));
 
-        List<Measurand> testSample2 = new ArrayList<>(testSample);
-        List<Measurand> testSample3 = new ArrayList<>(testSample);
-
-        testMeasurementAsList = new ArrayList<>();
-        testMeasurementAsList.add(testSample);
-        testMeasurementAsList.add(testSample2);
-        testMeasurementAsList.add(testSample3);
-
-        testMeasurement = new Measurement();
-        testMeasurement.setMeasurement(testMeasurementAsList);
+        testMeasurement.add(testSample);
+        testMeasurement.add(testSample);
+        testMeasurement.add(testSample);
     }
 
     @DataProvider
@@ -116,7 +108,7 @@ public class XlsReaderTests {
         Sheet testSheet = testWorkbook.getSheetAt(0);
 
         //When
-        fileWriter.writeMeasurementToWorkbook(testMeasurementAsList);
+        fileWriter.writeMeasurementToWorkbook(testMeasurement);
 
         //Then
         assertThat(testSheet.getPhysicalNumberOfRows()).isEqualTo(3);
@@ -131,8 +123,8 @@ public class XlsReaderTests {
         Sheet testSheet = testWorkbook.getSheetAt(0);
 
         //When
-        fileWriter.writeMeasurementToWorkbook(testMeasurementAsList);
-        fileWriter.writeMeasurementToWorkbook(testMeasurementAsList);
+        fileWriter.writeMeasurementToWorkbook(testMeasurement);
+        fileWriter.writeMeasurementToWorkbook(testMeasurement);
 
         //Then
         assertThat(testSheet.getPhysicalNumberOfRows()).isEqualTo(6);

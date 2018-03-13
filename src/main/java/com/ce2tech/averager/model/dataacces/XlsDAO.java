@@ -18,7 +18,7 @@ public class XlsDAO {
 
     public void setData(Measurement measurement, String filePath) {
         fileWriter.writeComponentsRowToNextRowOfWorkbook(measurement);
-        fileWriter.writeMeasurementToWorkbook(measurement.getMeasurement());
+        fileWriter.writeMeasurementToWorkbook(measurement);
         fileWriter.tryToSaveWorkbookInFile(filePath);
     }
 
