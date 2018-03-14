@@ -1,6 +1,6 @@
 import static org.assertj.core.api.Assertions.*;
 
-import com.ce2tech.averager.model.dto.Measurand;
+import com.ce2tech.averager.model.dataobjects.Measurand;
 import com.ce2tech.averager.presenter.XlsPresenter;
 import com.tngtech.java.junit.dataprovider.DataProvider;
 import com.tngtech.java.junit.dataprovider.DataProviderRunner;
