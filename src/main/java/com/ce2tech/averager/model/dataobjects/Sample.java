@@ -14,6 +14,10 @@ public class Sample implements Iterable<Measurand> {
         sampleAsList.add(measurand);
     }
 
+    public int size() {
+        return sampleAsList.size();
+    }
+
     @Override
     public Iterator<Measurand> iterator() {
         return sampleAsList.iterator();
