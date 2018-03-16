@@ -1,4 +1,4 @@
-package com.ce2tech.averager.myutils;
+package com.ce2tech.averager.model.config;
 
 import lombok.Getter;
 import org.apache.poi.ss.usermodel.CellStyle;

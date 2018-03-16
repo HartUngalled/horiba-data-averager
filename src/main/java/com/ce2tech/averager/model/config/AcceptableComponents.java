@@ -1,8 +1,6 @@
-package com.ce2tech.averager.model;
+package com.ce2tech.averager.model.config;
 
 import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.Setter;
 
 @AllArgsConstructor
 public enum AcceptableComponents {
@@ -18,11 +16,11 @@ public enum AcceptableComponents {
     K3_MA("MCU (K3).ActValueCurrent[0]"),
     K2_MA("MCU (Kanal K2).ActValueCurrent[0]");
 
-    @Getter @Setter String description;
+    private String description;
 
-    public static boolean isAcceptableMeasurand(String headerCell) {
+    public static boolean isAcceptableMeasurand(String componentCell) {
         for (AcceptableComponents component : AcceptableComponents.values()) {
-            if ( headerCell.contains(component.description) ) return true;
+            if ( componentCell.contains(component.description) ) return true;
         }
         return false;
     }

@@ -16,7 +16,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Iterator;
 
-import static com.ce2tech.averager.model.AcceptableComponents.isAcceptableMeasurand;
+import static com.ce2tech.averager.model.config.AcceptableComponents.isAcceptableMeasurand;
 import static com.ce2tech.averager.myutils.DateTimeUtils.convertToLocalDate;
 import static com.ce2tech.averager.myutils.DateTimeUtils.convertToLocalTime;
 

@@ -4,7 +4,7 @@ import com.ce2tech.averager.model.dataobjects.Measurand;
 import com.ce2tech.averager.model.dataobjects.Measurement;
 import com.ce2tech.averager.model.dataobjects.Sample;
 import com.ce2tech.averager.myutils.DateTimeUtils;
-import com.ce2tech.averager.myutils.WorkbookCellStyle;
+import com.ce2tech.averager.model.config.WorkbookCellStyle;
 import com.ce2tech.averager.myutils.MeasurandValueGetter;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.Cell;
